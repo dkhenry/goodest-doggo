@@ -1,0 +1,34 @@
+{
+  "sharded": true,
+  "vindexes": {
+    "hash": {
+		"type": "unicode_loose_md5"
+	}
+  },
+  "tables": {
+		"puppers": {
+			"column_vindexes": [
+				{
+					"column": "name",
+					"name": "hash"
+				}
+			],
+			"auto_increment": {
+				"column": "_id",
+				"sequence": "pupper_seq"
+			}
+		},
+		"ratings": {
+			"column_vindexes": [
+				{
+					"column": "pupper_name",
+					"name": "hash"
+				}
+			],
+			"auto_increment": {
+				"column": "_id",
+				"sequence": "rating_seq"
+			}
+		}
+  }		  
+}

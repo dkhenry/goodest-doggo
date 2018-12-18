@@ -1,0 +1,11 @@
+{
+  "sharded": false,
+  "tables": {
+    "pupper_seq": {
+      "type": "sequence"
+    },
+    "rating_seq": {
+      "type": "sequence"
+    }
+  }
+}
