@@ -3,6 +3,8 @@
 #[macro_use]
 extern crate rocket;
 
+pub mod generate;
+
 use doggo_core::commands::RatePupperCommand;
 
 #[derive(FromForm)]

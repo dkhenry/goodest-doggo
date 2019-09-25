@@ -1,8 +1,8 @@
-use r2d2_mysql::MysqlConnectionManager;
 use domain_patterns::command::Handles;
 use doggo_core::commands::RatePupperCommand;
-
-type Conn = r2d2_mysql::r2d2::PooledConnection<MysqlConnectionManager>;
+use super::CLIENT_POOL;
+use super::Conn;
+use mysql;
 
 pub struct VitessPupperCommandHandler {
     conn: Conn,
@@ -10,9 +10,11 @@ pub struct VitessPupperCommandHandler {
 
 impl VitessPupperCommandHandler {
     /// Associative function to create a new command handler from a connection.
-    pub fn new(conn: Conn) -> VitessPupperCommandHandler {
+    pub fn new() -> VitessPupperCommandHandler {
         VitessPupperCommandHandler {
-            conn,
+            // "Clone" the pool (it's an Arc, so just increase count) and then get a connection for use
+            // in this handler.
+            conn: CLIENT_POOL.clone().get_conn().unwrap(),
         }
     }
 }

@@ -10,7 +10,6 @@ edition = "2018"
 
 [dependencies]
 rocket = "0.4.2"
-mysql = "14.2.0"
 serde = "1.0.101"
 serde_derive = "1.0.101"
 doggo-infra = { path = "../doggo-infra" }
@@ -21,4 +20,4 @@ domain_patterns = "0.2.141"
 [dependencies.rocket_contrib]
 version = "0.4.2"
 default-features = false
-features = ["mysql_pool","json", "handlebars_templates"]
+features = ["handlebars_templates"]

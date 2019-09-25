@@ -2,9 +2,8 @@ use mysql;
 use domain_patterns::query::HandlesQuery;
 use doggo_core::queries::pupper_queries::{GetPupperQuery, GetRandomPupperQuery, PupperQueries};
 use doggo_core::dtos::Pupper;
-use r2d2_mysql::MysqlConnectionManager;
-
-type Conn = r2d2_mysql::r2d2::PooledConnection<MysqlConnectionManager>;
+use super::CLIENT_POOL;
+use super::Conn;
 
 pub struct VitessPupperQueriesHandler {
     conn: Conn,
@@ -12,9 +11,11 @@ pub struct VitessPupperQueriesHandler {
 
 impl VitessPupperQueriesHandler {
     /// Associative function to create a new query handler from a connection.
-    pub fn new(conn: Conn) -> VitessPupperQueriesHandler {
+    pub fn new() -> VitessPupperQueriesHandler {
         VitessPupperQueriesHandler {
-            conn,
+            // "Clone" the pool (it's an Arc, so just increase count) and then get a connection for use
+            // in this handler.
+            conn: CLIENT_POOL.clone().get_conn().unwrap(),
         }
     }
     // May optionally return a rating upon successful db interaction.  Underlying db
