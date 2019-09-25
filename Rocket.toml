@@ -1,0 +1,5 @@
+[development]
+template_dir = "doggo-api/templates/"
+
+[production]
+template_dir = "/usr/local/lib/doggo/templates/"
