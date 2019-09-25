@@ -70,9 +70,10 @@ impl HandlesQuery<GetPupperQuery> for VitessPupperQueriesHandler {
                 Ok(mut qr) => {
                     if let Some(row_result) = qr.next() {
                         let row = row_result?;
-                        mysql::from_row::<(u64, String, String)>(row);
+                        Some(mysql::from_row::<(u64, String, String)>(row))
+                    } else {
+                        None
                     }
-                    None
                 },
 
                 // Underlying MySQL error type unrelated to existence of puppers in db.
@@ -105,9 +106,10 @@ impl HandlesQuery<GetRandomPupperQuery> for VitessPupperQueriesHandler {
                 Ok(mut qr) => {
                     if let Some(row_result) = qr.next() {
                         let row = row_result?;
-                        mysql::from_row::<(u64, String, String)>(row);
+                        Some(mysql::from_row::<(u64, String, String)>(row))
+                    } else {
+                        None
                     }
-                    None
                 },
 
                 // Underlying MySQL error type unrelated to existence of puppers in db.
