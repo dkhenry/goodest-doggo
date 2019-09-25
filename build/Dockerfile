@@ -1,4 +1,4 @@
-FROM rust:nightly as builder
+FROM rustlang/rust:nightly as builder
 
 ENV ROCKET_ENV prod
 ENV ROCKET_DATABASES '{ doggers = { url = "mysql://mysql_user:mysql_password@localhost:3306/doggers" } }'
@@ -19,8 +19,8 @@ RUN apk --no-cache add ca-certificates
 
 # Copy build files over
 COPY --from=builder /target/x86_64-unknown-linux-musl/release/doggo-api /usr/local/bin
-COPY --from=builder Rocket.toml /usr/local/lib/doggo/
-COPY --from=builder templates /usr/local/lib/doggo/templates
+COPY --from=builder doggo-api/Rocket.toml /usr/local/lib/doggo/
+COPY --from=builder doggo-api/templates /usr/local/lib/doggo/templates
 
 WORKDIR /usr/local/lib/doggo/
 EXPOSE 8000
