@@ -1,4 +1,3 @@
-use doggo_core::dtos::Pupper;
 use r2d2_mysql::MysqlConnectionManager;
 use domain_patterns::command::Handles;
 use doggo_core::commands::RatePupperCommand;
