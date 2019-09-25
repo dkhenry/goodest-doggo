@@ -6,6 +6,7 @@ use rocket::http::{RawStr,Status};
 use rocket::http::uri::Uri;
 use rocket::request::Form;
 use rocket::response::Redirect;
+use dotenv::dotenv;
 
 #[macro_use] extern crate rocket_contrib;
 use rocket_contrib::databases::mysql;
@@ -103,6 +104,8 @@ fn get_puppers(mut conn: DoggersDb, name: &RawStr) -> Result<Template,Status> {
 }
 
 fn main() {
+    dotenv().ok();
+
     rocket::ignite()
         .attach(DoggersDb::fairing())
         .attach(Template::fairing())        
