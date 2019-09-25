@@ -1,0 +1,20 @@
+[package]
+name = "doggo-api"
+version = "0.1.0"
+authors = ["Dan Kozlowski <koz@planetscale.com>", "Peter Farr <peter@prismaphonic.com>"]
+description = "goodest doggo allows you to vote for the goodest dog in the world.  It's up to you to find the goodest doggo and vote with your heart"
+keywords = ["dogs", "doggo", "vitess"]
+categories = ["database"]
+repository = "https://github.com/planetscale/goodest-doggo"
+edition = "2018"
+
+[dependencies]
+rocket = "0.4.2"
+mysql = "16.1.0"
+serde = "1.0.101"
+serde_derive = "1.0.101"
+
+[dependencies.rocket_contrib]
+version = "0.4.2"
+default-features = false
+features = ["mysql_pool","json", "handlebars_templates"]
