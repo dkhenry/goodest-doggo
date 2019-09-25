@@ -19,7 +19,7 @@ RUN apk --no-cache add ca-certificates
 
 # Copy build files over
 COPY --from=builder /target/x86_64-unknown-linux-musl/release/doggo-api /usr/local/bin
-COPY --from=builder doggo-api/Rocket.toml /usr/local/lib/doggo/
+COPY --from=builder Rocket.toml /usr/local/lib/doggo/
 COPY --from=builder doggo-api/templates /usr/local/lib/doggo/templates
 
 WORKDIR /usr/local/lib/doggo/
