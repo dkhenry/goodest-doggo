@@ -24,7 +24,7 @@ impl Handles<RatePupperCommand> for VitessPupperCommandHandler {
 
     fn handle(&mut self, msg: RatePupperCommand) -> Self::Result {
         match self.conn.prep_exec(
-            r"INSERT INTO ratings (pupper_name, rating )
+            r"INSERT INTO ratings (pupper_name, rating)
             VALUES (?,?)",
             (msg.name, msg.rating,)
         ) {

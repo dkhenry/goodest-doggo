@@ -9,14 +9,28 @@ use rocket::response::Redirect;
 use dotenv::dotenv;
 use rocket_contrib::templates::Template;
 use domain_patterns::query::HandlesQuery;
-use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery};
+use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, GetTopTenPuppersQuery};
 use doggo_api::Rating;
 use domain_patterns::command::Handles;
 use doggo_api::generate::{command_handler, query_handler};
+use doggo_core::dtos::Pupper;
 
 #[get("/")]
 fn index() -> Redirect {
-    Redirect::to("/puppers")
+//    Redirect::to("/puppers")
+    Redirect::to("/test")
+}
+
+// dummy route for now for testing
+#[get("/test")]
+fn test() -> Result<Template,Status> {
+    let fake_pup = Pupper {
+        id: 0,
+        name: "".to_string(),
+        image: "".to_string(),
+        rating: None
+    };
+    Ok(Template::render("pupper", fake_pup))
 }
 
 #[put("/rating", data="<rating>")]
@@ -31,9 +45,7 @@ fn rate_pupper(rating: Form<Rating>) -> Result<&'static str,Status> {
 #[get("/puppers")]
 fn get_rando_pupper() -> Result<Template,Status> {
     let pupper = query_handler().handle(GetRandomPupperQuery)
-        // Map underlying database error to 500
         .map_err(|_|Status::InternalServerError)?
-        // Map None to 404
         .ok_or(Status::NotFound)?;
 
     Ok(Template::render("pupper",pupper))
@@ -42,12 +54,20 @@ fn get_rando_pupper() -> Result<Template,Status> {
 #[get("/puppers?<name>")]
 fn get_puppers(name: String) -> Result<Template,Status> {
     let pupper = query_handler().handle(GetPupperQuery { name, })
-        // Map underlying database error to 500
         .map_err(|_| Status::InternalServerError)?
-        // Map None to 404
         .ok_or(Status::NotFound)?;
 
     Ok(Template::render("pupper",pupper))
+}
+
+#[get("/topten")]
+fn top_ten() -> Result<Template,Status> {
+    let puppers = query_handler().handle(GetTopTenPuppersQuery)
+        .map_err(|_| Status::InternalServerError)?
+        .ok_or(Status::NotFound)?;
+
+    // TODO: Swap this out with top 10 template
+    Ok(Template::render("pupper",puppers))
 }
 
 fn main() {
@@ -55,6 +75,6 @@ fn main() {
 
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![index,get_puppers,get_rando_pupper,rate_pupper])
+        .mount("/", routes![index,get_puppers,get_rando_pupper,rate_pupper,test,top_ten])
         .launch();
 }

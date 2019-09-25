@@ -1,5 +1,6 @@
 use domain_patterns::query::Query;
 
+// These queries should always return a Result<Option<Pupper>, dbError>
 #[derive(Query)]
 pub struct GetPupperQuery {
     pub name: String,
@@ -8,20 +9,6 @@ pub struct GetPupperQuery {
 #[derive(Query)]
 pub struct GetRandomPupperQuery;
 
+// The following are queries that can return a list of results.
 #[derive(Query)]
-pub enum PupperQueries {
-    GetPupper(GetPupperQuery),
-    GetRandomPupper(GetRandomPupperQuery),
-}
-
-impl From<GetPupperQuery> for PupperQueries {
-    fn from(query: GetPupperQuery) -> Self {
-        PupperQueries::GetPupper(query)
-    }
-}
-
-impl From<GetRandomPupperQuery> for PupperQueries {
-    fn from(query: GetRandomPupperQuery) -> Self {
-        PupperQueries::GetRandomPupper(query)
-    }
-}
+pub struct GetTopTenPuppersQuery;
