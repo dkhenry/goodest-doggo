@@ -1,38 +1,26 @@
 #![feature(proc_macro_hygiene, decl_macro)]
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 
-#[macro_use] extern crate rocket;
-use rocket::http::{RawStr,Status};
-use rocket::http::uri::Uri;
+#[macro_use]
+extern crate rocket_contrib;
+
+#[macro_use]
+extern crate rocket;
+
+use rocket::http::Status;
 use rocket::request::Form;
 use rocket::response::Redirect;
 use dotenv::dotenv;
-
-#[macro_use] extern crate rocket_contrib;
 use rocket_contrib::databases::mysql;
-
 use rocket_contrib::templates::Template;
+use doggo_infra::query_handlers::VitessPupperQueriesHandler;
+use domain_patterns::query::HandlesQuery;
+use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery};
 
 #[database("doggers")]
 struct DoggersDb(mysql::Conn);
 
-#[derive(Serialize)]
-struct Pupper {
-    id: u64,
-    name: String,
-    image: String,
-    rating: f64
-}
-
-fn new_pupper() -> Pupper {
-    Pupper {
-        id: 0,
-        name: String::from(""),
-        image: String::from(""),
-        rating: 0.0,
-    }
-}
-           
 #[derive(FromForm)]
 struct Rating {
     name: String,
@@ -52,55 +40,28 @@ fn rate_pupper(mut conn: DoggersDb, rating: Form<Rating>) -> Result<&'static str
     }
 }
 
-fn pupper_rating(mut conn:DoggersDb, name: &str) -> f64 {
-    return conn.0.query(format!("SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) FROM doggers@replica.ratings as r WHERE r.pupper_name='{}'",name)).ok().and_then(|mut result| {
-        return result.next().and_then(|wrapped_row| {
-            return wrapped_row.ok().and_then(|row| {
-                let r: f64 = mysql::from_row(row);
-                return Some(r)
-            })
-        })            
-    }).unwrap_or(0.0)
-}
-
 #[get("/puppers")]
-fn get_rando_pupper(mut conn: DoggersDb) -> Result<Template,Status> {
-    let mut p: Pupper = conn.0.query(format!("SELECT p._id, p.name, p.image FROM doggers@replica.puppers AS p ORDER BY RAND() LIMIT 1")).map(|mut qr| {        
-        match qr.next() {
-            None => new_pupper(),
-            Some(mr) => mr.map(|row| {
-                let mut p = new_pupper();
-                let r: (u64,String,String) = mysql::from_row(row);
-                p.id = r.0;
-                p.name = r.1;
-                p.image = r.2;
-                return p
-            }).unwrap_or(new_pupper())
-        }
-    }).unwrap_or(new_pupper());
-    p.rating = pupper_rating(conn, &p.name);                        
-    return Ok(Template::render("pupper",p))       
+fn get_rando_pupper(conn: DoggersDb) -> Result<Template,Status> {
+    let mut query_handler = VitessPupperQueriesHandler::new(conn.0);
+    let pupper = query_handler.handle(GetRandomPupperQuery)
+        // Map underlying database error to 500
+        .map_err(|_|Status::InternalServerError)?
+        // Map None to 404
+        .ok_or(Status::NotFound)?;
+
+    Ok(Template::render("pupper",pupper))
 }
 
 #[get("/puppers?<name>")]
-fn get_puppers(mut conn: DoggersDb, name: &RawStr) -> Result<Template,Status> {
-    let p: Option<Pupper> = conn.0.query(format!("SELECT p._id, p.name, p.image FROM puppers AS p WHERE name ='{}'",Uri::percent_decode(name.as_bytes()).unwrap())).ok().and_then(|mut qr| {        
-        qr.next().and_then(|mr| {
-            mr.map(|row| {
-                let mut p = new_pupper();
-                let r: (u64,String,String) = mysql::from_row(row);
-                p.id = r.0;
-                p.name = r.1;
-                p.image = r.2;
-                return p
-            }).ok()
-        })
-    });
+fn get_puppers(conn: DoggersDb, name: String) -> Result<Template,Status> {
+    let mut query_handler = VitessPupperQueriesHandler::new(conn.0);
+    let pupper = query_handler.handle(GetPupperQuery { name, })
+        // Map underlying database error to 500
+        .map_err(|_| Status::InternalServerError)?
+        // Map None to 404
+        .ok_or(Status::NotFound)?;
 
-    p.ok_or(Status::NotFound).map(|mut p| {        
-        p.rating = pupper_rating(conn, &p.name);                        
-        return Template::render("pupper",p)
-    })
+    Ok(Template::render("pupper",pupper))
 }
 
 fn main() {
