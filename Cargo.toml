@@ -1,6 +1,6 @@
 [workspace]
 
 members = [
-    "doggo-api"
-    "doggo-infra"
+    "doggo-api",
+    "doggo-infra",
 ]
