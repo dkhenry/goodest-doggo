@@ -1,9 +1,9 @@
 .PHONY: build
 
-IMAGE:=doggo/doggo-api
+IMAGE:=registry.planetscale.com/kubecon/goodestdoggo
 
 build: 
-	docker build -t $(IMAGE):latest -f build/Dockerfile .
+	docker build -t $(IMAGE):demo -f build/Dockerfile .
 
 clean:
 	@echo 'stopping docker containers'
