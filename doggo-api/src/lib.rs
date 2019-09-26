@@ -6,6 +6,7 @@ extern crate rocket;
 pub mod generate;
 
 use doggo_core::commands::RatePupperCommand;
+use doggo_core::dtos::Pupper;
 
 #[derive(FromForm)]
 pub struct Rating {

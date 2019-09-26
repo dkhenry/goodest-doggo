@@ -13,7 +13,7 @@ use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, 
 use doggo_api::Rating;
 use domain_patterns::command::Handles;
 use doggo_api::generate::{command_handler, query_handler};
-use doggo_core::dtos::Pupper;
+use doggo_core::dtos::{Pupper, Puppers};
 
 #[get("/")]
 fn index() -> Redirect {
@@ -45,10 +45,7 @@ fn rate_pupper(rating: Form<Rating>) -> Result<&'static str,Status> {
 #[get("/puppers")]
 fn get_rando_pupper() -> Result<Template,Status> {
     let pupper = query_handler().handle(GetRandomPupperQuery)
-        .map_err(|e|{
-            println!("{:?}", e);
-            Status::InternalServerError
-        })?
+        .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
     Ok(Template::render("pupper",pupper))
@@ -57,25 +54,28 @@ fn get_rando_pupper() -> Result<Template,Status> {
 #[get("/puppers?<name>")]
 fn get_puppers(name: String) -> Result<Template,Status> {
     let pupper = query_handler().handle(GetPupperQuery { name, })
-        .map_err(|_| { Status::InternalServerError })?
+        .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
     Ok(Template::render("pupper",pupper))
 }
 
 #[get("/topten")]
-fn top_ten() -> Result<String,Status> {
+fn top_ten() -> Result<Template,Status> {
     let puppers = query_handler().handle(GetTopTenPuppersQuery)
-        .map_err(|e| {
-            println!("{:?}", e);
-            Status::InternalServerError
-        })?
+        .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
-    let pups_str = puppers.into_iter().map(|p| p.name).collect::<Vec<String>>().join(", ");
+    Ok(Template::render("topten", Puppers::new(puppers)))
+}
 
-    // TODO: Swap this out with top 10 template
-    Ok(pups_str)
+fn random_pup(id: u64) -> Pupper {
+    Pupper {
+        id,
+        name: "Test Pup".to_string(),
+        image: "https://external-preview.redd.it/wJFQ7YoKEAMRvGFxMzaqjPoPHwC43i7j5VFur5mVC9I.jpg?auto=webp&s=2805244cfc10315ce8f8f6204974d29b9f03984c".to_string(),
+        rating: Some(13.3),
+    }
 }
 
 fn main() {
