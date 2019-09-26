@@ -74,7 +74,7 @@ impl VitessPupperQueriesHandler {
                 WHERE name in
                 (?,?,?,?,?,?,?,?,?,?)",
                 names
-            ).map(|mut result| {
+            ).map(|result| {
                 // TODO: Fix this unwrap.
                 result.map(|row_result| row_result.unwrap() ).map(|row| {
                     let (id, name, image) = mysql::from_row(row);
@@ -92,16 +92,16 @@ impl VitessPupperQueriesHandler {
     }
 }
 
-impl HandlesQuery<GetPupperQuery> for VitessPupperQueriesHandler {
+impl HandlesQuery<&GetPupperQuery> for VitessPupperQueriesHandler {
     type Result = Result<Option<Pupper>, mysql::Error>;
 
-    fn handle(&mut self, query: GetPupperQuery) -> Self::Result {
+    fn handle(&mut self, query: &GetPupperQuery) -> Self::Result {
         let r: Option<(u64, String, String)> =
             match self.conn.prep_exec(
                 r"SELECT p._id, p.name, p.image
                 FROM puppers AS p
                 WHERE name = ?",
-                (query.name,)
+                (&query.name,)
             ) {
                 Ok(mut qr) => {
                     if let Some(row_result) = qr.next() {
@@ -127,11 +127,11 @@ impl HandlesQuery<GetPupperQuery> for VitessPupperQueriesHandler {
     }
 }
 
-impl HandlesQuery<GetRandomPupperQuery> for VitessPupperQueriesHandler {
+impl HandlesQuery<&GetRandomPupperQuery> for VitessPupperQueriesHandler {
     type Result = Result<Option<Pupper>, mysql::Error>;
 
     #[allow(unused_variables)]
-    fn handle(&mut self, query: GetRandomPupperQuery) -> Self::Result {
+    fn handle(&mut self, query: &GetRandomPupperQuery) -> Self::Result {
         let r: Option<(u64, String, String)> =
             match self.conn.query(
                 r"SELECT p._id, p.name, p.image
@@ -163,11 +163,11 @@ impl HandlesQuery<GetRandomPupperQuery> for VitessPupperQueriesHandler {
     }
 }
 
-impl HandlesQuery<GetTopTenPuppersQuery> for VitessPupperQueriesHandler {
+impl HandlesQuery<&GetTopTenPuppersQuery> for VitessPupperQueriesHandler {
     type Result = Result<Option<Vec<Pupper>>, mysql::Error>;
 
     #[allow(unused_variables)]
-    fn handle(&mut self, query: GetTopTenPuppersQuery) -> Self::Result {
+    fn handle(&mut self, query: &GetTopTenPuppersQuery) -> Self::Result {
         let winners: Vec<(String, f64)> =
         self.conn.query(
             r"SELECT r.pupper_name as name, COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) as rating
@@ -175,7 +175,7 @@ impl HandlesQuery<GetTopTenPuppersQuery> for VitessPupperQueriesHandler {
                 GROUP BY r.pupper_name
                 ORDER BY rating asc
                 LIMIT 10"
-        ).map(|mut result| {
+        ).map(|result| {
             // TODO: This might break with the nested unwrap.
             result.map(|row_result| row_result.unwrap() ).map(|row| {
                 mysql::from_row(row)

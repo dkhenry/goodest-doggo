@@ -45,7 +45,10 @@ fn rate_pupper(rating: Form<Rating>) -> Result<&'static str,Status> {
 #[get("/puppers")]
 fn get_rando_pupper() -> Result<Template,Status> {
     let pupper = query_handler().handle(GetRandomPupperQuery)
-        .map_err(|e|Status::InternalServerError)?
+        .map_err(|e|{
+            println!("{:?}", e);
+            Status::InternalServerError
+        })?
         .ok_or(Status::NotFound)?;
 
     Ok(Template::render("pupper",pupper))

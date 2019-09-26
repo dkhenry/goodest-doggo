@@ -10,5 +10,9 @@ type Conn = mysql::PooledConn;
 
 pub mod query_handlers;
 pub use query_handlers::*;
+
+pub mod query_retry_wrapper;
+pub use query_retry_wrapper::*;
+
 pub mod command_handlers;
 pub use command_handlers::*;
