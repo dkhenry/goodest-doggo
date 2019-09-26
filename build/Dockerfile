@@ -18,11 +18,11 @@ FROM alpine:3.10
 RUN apk --no-cache add ca-certificates 
 
 # Copy build files over
-COPY --from=builder /target/x86_64-unknown-linux-musl/release/doggo-api /usr/local/bin
+COPY --from=builder /target/x86_64-unknown-linux-musl/release/doggo-api /usr/local/bin/doggo-api
 COPY --from=builder Rocket.toml /usr/local/lib/doggo/
 COPY --from=builder doggo-api/templates /usr/local/lib/doggo/templates
 
 WORKDIR /usr/local/lib/doggo/
 EXPOSE 8000
 
-CMD ["/usr/local/bin/doggo"]
+CMD ["/usr/local/bin/doggo-api"]
