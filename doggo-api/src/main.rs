@@ -17,8 +17,8 @@ use doggo_core::dtos::{Pupper, Puppers};
 
 #[get("/")]
 fn index() -> Redirect {
-//    Redirect::to("/puppers")
-    Redirect::to("/test")
+    Redirect::to("/puppers")
+//    Redirect::to("/test")
 }
 
 #[get("/test")]
@@ -69,7 +69,7 @@ fn top_ten() -> Result<Template,Status> {
 }
 
 fn main() {
-    dotenv().ok();
+//    dotenv().ok();
 
     rocket::ignite()
         .attach(Template::fairing())
