@@ -45,7 +45,7 @@ fn rate_pupper(rating: Form<Rating>) -> Result<&'static str,Status> {
 #[get("/puppers")]
 fn get_rando_pupper() -> Result<Template,Status> {
     let pupper = query_handler().handle(GetRandomPupperQuery)
-        .map_err(|_|Status::InternalServerError)?
+        .map_err(|e|Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
     Ok(Template::render("pupper",pupper))
@@ -54,20 +54,25 @@ fn get_rando_pupper() -> Result<Template,Status> {
 #[get("/puppers?<name>")]
 fn get_puppers(name: String) -> Result<Template,Status> {
     let pupper = query_handler().handle(GetPupperQuery { name, })
-        .map_err(|_| Status::InternalServerError)?
+        .map_err(|_| { Status::InternalServerError })?
         .ok_or(Status::NotFound)?;
 
     Ok(Template::render("pupper",pupper))
 }
 
 #[get("/topten")]
-fn top_ten() -> Result<Template,Status> {
+fn top_ten() -> Result<String,Status> {
     let puppers = query_handler().handle(GetTopTenPuppersQuery)
-        .map_err(|_| Status::InternalServerError)?
+        .map_err(|e| {
+            println!("{:?}", e);
+            Status::InternalServerError
+        })?
         .ok_or(Status::NotFound)?;
 
+    let pups_str = puppers.into_iter().map(|p| p.name).collect::<Vec<String>>().join(", ");
+
     // TODO: Swap this out with top 10 template
-    Ok(Template::render("pupper",puppers))
+    Ok(pups_str)
 }
 
 fn main() {

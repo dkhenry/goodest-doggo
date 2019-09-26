@@ -24,7 +24,7 @@ impl VitessPupperQueriesHandler {
     fn puppers_rating(&mut self, name: &String) -> Result<Option<f64>, mysql::Error> {
         match self.conn.prep_exec(
             r"SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0)
-            FROM doggers@replica.ratings as r
+            FROM puppers@replica.ratings as r
             WHERE r.pupper_name=?",
             (name,)
         ) {
@@ -135,7 +135,7 @@ impl HandlesQuery<GetRandomPupperQuery> for VitessPupperQueriesHandler {
         let r: Option<(u64, String, String)> =
             match self.conn.query(
                 r"SELECT p._id, p.name, p.image
-                FROM doggers@replica.puppers AS p
+                FROM puppers@replica.puppers AS p
                 ORDER BY RAND()
                 LIMIT 1"
             ) {
@@ -170,10 +170,10 @@ impl HandlesQuery<GetTopTenPuppersQuery> for VitessPupperQueriesHandler {
     fn handle(&mut self, query: GetTopTenPuppersQuery) -> Self::Result {
         let winners: Vec<(String, f64)> =
         self.conn.query(
-            r"SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) as rating, r.pupper_name as name
-                FROM doggers@replica.ratings AS r
+            r"SELECT r.pupper_name as name, COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) as rating
+                FROM puppers@replica.ratings AS r
                 GROUP BY r.pupper_name
-                ORDER BY r.rating
+                ORDER BY rating asc
                 LIMIT 10"
         ).map(|mut result| {
             // TODO: This might break with the nested unwrap.
