@@ -21,7 +21,6 @@ fn index() -> Redirect {
     Redirect::to("/test")
 }
 
-// dummy route for now for testing
 #[get("/test")]
 fn test() -> Result<Template,Status> {
     let fake_pup = Pupper {
@@ -67,15 +66,6 @@ fn top_ten() -> Result<Template,Status> {
         .ok_or(Status::NotFound)?;
 
     Ok(Template::render("topten", Puppers::new(puppers)))
-}
-
-fn random_pup(id: u64) -> Pupper {
-    Pupper {
-        id,
-        name: "Test Pup".to_string(),
-        image: "https://external-preview.redd.it/wJFQ7YoKEAMRvGFxMzaqjPoPHwC43i7j5VFur5mVC9I.jpg?auto=webp&s=2805244cfc10315ce8f8f6204974d29b9f03984c".to_string(),
-        rating: Some(13.3),
-    }
 }
 
 fn main() {

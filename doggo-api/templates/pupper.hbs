@@ -58,15 +58,27 @@
   fill: transparent;
 }
 
+.nav-link {
+    color: black;
+    text-decoration: none;
+}
+.nav-link:hover {
+    color: black;
+    text-decoration: none;
+}
 </style>
 </head>
 <body>
 <div class="top-bar">
-<div class="top-bar-left">
-<ul class="menu">
-<li class="menu-text">Goodest Doggo</li>
-</ul>
-</div>
+    <div class="top-bar-left">
+        <ul class="menu">
+            <li class="menu-text">
+                <a href="../" class="nav-link">
+                    Goodest Doggo
+                </a>
+            </li>
+        </ul>
+    </div>
 </div>
 
 <div class="row medium-8 large-7 columns">
@@ -74,7 +86,7 @@
 <h1 id="pupper">Pupper Name: <b>{{ name }}</b></h1>
 <img class="thumbnail" src="{{ image }}">
 <h1 id="rating">Current Rating: <b>{{ rating }}</b><h1>
-<div class="card rating" align="center">
+<div class="card rating margin-bottom-3" align="center">
   <div class="card-section">
     <div class="rating-block">
       <div class="rating-block-rating" data-rating>
@@ -147,9 +159,8 @@
     </div>
   </div>
 </div>
+<a href="../topten" class="success button large margin-top-3">Top Dogs</a>
 </div>
-
-
 
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="https://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>
