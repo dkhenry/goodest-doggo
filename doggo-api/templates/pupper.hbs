@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Goodest Pupper | Welcome</title>
+<title>Goodest Doggo | Welcome</title>
 <link rel="stylesheet" href="https://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.min.css">
 <style>
 
@@ -179,7 +179,7 @@ $('[data-rating] .star').on('click', function() {
   $.ajax({
     url: "/rating",
 	type: "PUT",
-	data: { 'rating': rating, 'name': '{{ name }}' },
+	data: { 'rating': rating, 'name': '{{ name }}', 'id': {{ id }}, 'image': {{ image }} },
 	complete: function(result) {
       window.location="/puppers"
     }
