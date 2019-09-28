@@ -179,7 +179,7 @@ $('[data-rating] .star').on('click', function() {
   $.ajax({
     url: "/rating",
 	type: "PUT",
-	data: { 'rating': rating, 'name': '{{ name }}', 'id': {{ id }}, 'image': {{ image }} },
+	data: { 'rating': rating, 'name': '{{ name }}', 'pup_id': {{ id }} },
 	complete: function(result) {
       window.location="/puppers"
     }

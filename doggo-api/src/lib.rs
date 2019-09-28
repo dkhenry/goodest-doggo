@@ -9,7 +9,7 @@ use doggo_core::commands::RatePupperCommand;
 
 #[derive(FromForm)]
 pub struct Rating {
-    pub id: u64,
+    pub pup_id: u64,
     pub name: String,
     pub image: String,
     pub rating: u64,
