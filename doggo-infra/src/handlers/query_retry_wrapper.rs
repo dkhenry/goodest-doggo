@@ -4,7 +4,7 @@ use doggo_core::queries::pupper_queries::{GetPupperQuery, GetRandomPupperQuery, 
 use doggo_core::dtos::Pupper;
 use mysql;
 
-const RETRY_COUNT: i32 = 30;
+const RETRY_COUNT: i32 = 5;
 
 pub struct VitessQueryRetryWrapper {
     handler: VitessPupperQueriesHandler

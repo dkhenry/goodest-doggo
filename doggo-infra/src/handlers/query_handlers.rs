@@ -38,7 +38,6 @@ impl VitessPupperQueriesHandler {
         }
     }
 
-    // TODO: If this returns an error, then we have underlying db failure and need to retry.
     fn pup_with_rating(
         &mut self,
         pup_data: (u64, String, String)
@@ -73,9 +72,6 @@ impl VitessPupperQueriesHandler {
 
         let ids_str: String = list.iter().map(|(i, _)| i.to_string()).collect::<Vec<String>>().join("','");
 
-        // TODO: With this current design if we fail to get any of these puppers then we don't return
-        // a pupper for that row.  That means we could potentially have a final Vec that has less
-        // than 10 puppers in it due to lookup failure.  Figure out a better way to handle this.
         self.conn.query(
             format!(r"SELECT p.id as id, p.name as name, p.image as image
             FROM puppers AS p
