@@ -13,3 +13,4 @@ mysql = "16.1.0"
 domain_patterns = "0.2.141"
 doggo-core = { path = "../doggo-core" }
 lazy_static = "1.4.0"
+indexmap = "1.2.0"

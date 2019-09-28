@@ -3,7 +3,7 @@ use domain_patterns::query::Query;
 // These queries should always return a Result<Option<Pupper>, dbError>
 #[derive(Query)]
 pub struct GetPupperQuery {
-    pub name: String,
+    pub id: u64,
 }
 
 #[derive(Query)]

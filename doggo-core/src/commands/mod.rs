@@ -3,6 +3,6 @@ use domain_patterns::message::Message;
 
 #[derive(Command)]
 pub struct RatePupperCommand {
-    pub name: String,
+    pub pupper_id: u64,
     pub rating: u64,
 }

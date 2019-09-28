@@ -3,10 +3,12 @@
 #[macro_use]
 extern crate rocket;
 
+// Uncomment for local development
+// use dotenv::dotenv;
+
 use rocket::http::Status;
 use rocket::request::Form;
 use rocket::response::Redirect;
-use dotenv::dotenv;
 use rocket_contrib::templates::Template;
 use domain_patterns::query::HandlesQuery;
 use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, GetTopTenPuppersQuery};
@@ -18,18 +20,6 @@ use doggo_core::dtos::{Pupper, Puppers};
 #[get("/")]
 fn index() -> Redirect {
     Redirect::to("/puppers")
-//    Redirect::to("/test")
-}
-
-#[get("/test")]
-fn test() -> Result<Template,Status> {
-    let fake_pup = Pupper {
-        id: 0,
-        name: "".to_string(),
-        image: "".to_string(),
-        rating: None
-    };
-    Ok(Template::render("pupper", fake_pup))
 }
 
 #[put("/rating", data="<rating>")]
@@ -50,9 +40,9 @@ fn get_rando_pupper() -> Result<Template,Status> {
     Ok(Template::render("pupper",pupper))
 }
 
-#[get("/puppers?<name>")]
-fn get_puppers(name: String) -> Result<Template,Status> {
-    let pupper = query_handler().handle(GetPupperQuery { name, })
+#[get("/puppers?<id>")]
+fn get_puppers(id: u64) -> Result<Template,Status> {
+    let pupper = query_handler().handle(GetPupperQuery { id, })
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
@@ -73,6 +63,6 @@ fn main() {
 
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![index,get_puppers,get_rando_pupper,rate_pupper,test,top_ten])
+        .mount("/", routes![index,get_puppers,get_rando_pupper,rate_pupper,top_ten])
         .launch();
 }

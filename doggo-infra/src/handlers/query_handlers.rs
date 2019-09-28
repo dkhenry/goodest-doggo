@@ -4,7 +4,7 @@ use doggo_core::queries::pupper_queries::{GetPupperQuery, GetRandomPupperQuery, 
 use doggo_core::dtos::Pupper;
 use super::CLIENT_POOL;
 use super::Conn;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 pub struct VitessPupperQueriesHandler {
     conn: Conn,
@@ -21,12 +21,11 @@ impl VitessPupperQueriesHandler {
     }
     // May optionally return a rating upon successful db interaction.  Underlying db
     // error will be communicated as a mysql::Error in the Err result variant returned.
-    fn puppers_rating(&mut self, name: &String) -> Result<Option<f64>, mysql::Error> {
-        match self.conn.prep_exec(
-            r"SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0)
+    fn puppers_rating(&mut self, id: u64) -> Result<Option<f64>, mysql::Error> {
+        match self.conn.query(
+            format!(r"SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0)
             FROM puppers@replica.ratings as r
-            WHERE r.pupper_name=?",
-            (name,)
+            WHERE r.pupper_id='{}'", id)
         ) {
             Ok(mut qr) => {
                 if let Some(row_result) = qr.next() {
@@ -44,7 +43,7 @@ impl VitessPupperQueriesHandler {
         &mut self,
         pup_data: (u64, String, String)
     ) -> Result<Option<Pupper>, mysql::Error> {
-        let maybe_rating = self.puppers_rating(&pup_data.1)?;
+        let maybe_rating = self.puppers_rating(pup_data.0)?;
         return Ok(
             Some(
                 Pupper {
@@ -59,34 +58,38 @@ impl VitessPupperQueriesHandler {
 
     fn puppers_from_rating_list(
         &mut self,
-        list: Vec<(String, f64)>,
+        list: Vec<(u64, f64)>,
     ) -> Result<Vec<Pupper>, mysql::Error> {
-        let rating_mapping: HashMap<String, f64> = list.into_iter().collect();
-        let names: Vec<&String> = rating_mapping.iter().map(|p| p.0).collect();
+        // Cloning primitives is cheap, so doing so is virtually cost free for such a small list.
+        // Using IndexMap because it maintains insertion order.
+        let mut pupper_map: IndexMap<u64, Pupper> = list.iter().map(|(i, r)| {
+            (i.clone(), Pupper {
+                id: i.clone(),
+                name: "".to_string(),
+                image: "".to_string(),
+                rating: Some(*r)
+            })
+        }).collect();
+
+        let ids_str: String = list.iter().map(|(i, _)| i.to_string()).collect::<Vec<String>>().join("','");
 
         // TODO: With this current design if we fail to get any of these puppers then we don't return
         // a pupper for that row.  That means we could potentially have a final Vec that has less
         // than 10 puppers in it due to lookup failure.  Figure out a better way to handle this.
-        let puppers: Vec<Pupper> =
-            self.conn.prep_exec(
-                r"SELECT p._id as id, p.name as name, p.image as image
-                FROM puppers AS p
-                WHERE name in
-                (?,?,?,?,?,?,?,?,?,?)",
-                names
-            ).map(|result| {
-                // TODO: Fix this unwrap.
-                result.map(|row_result| row_result.unwrap() ).map(|row| {
-                    let (id, name, image) = mysql::from_row(row);
-                    let rating = Some(*rating_mapping.get(&name).unwrap());
-                    Pupper {
-                        id,
-                        name,
-                        image,
-                        rating,
-                    }
-                }).collect()
-            })?;
+        self.conn.query(
+            format!(r"SELECT p.id as id, p.name as name, p.image as image
+            FROM puppers AS p
+            WHERE id in
+            ('{}')", ids_str)
+        ).map(|result| {
+            // TODO: Fix this unwrap.
+            result.map(|row_result| row_result.unwrap()).for_each(|row| {
+                let (id, name, image) = mysql::from_row(row);
+                pupper_map.entry(id).and_modify(|p| { p.name = name; p.image = image});
+            });
+        })?;
+
+        let puppers = pupper_map.into_iter().map(|(_, p)| p).collect();
 
         Ok(puppers)
     }
@@ -97,11 +100,10 @@ impl HandlesQuery<&GetPupperQuery> for VitessPupperQueriesHandler {
 
     fn handle(&mut self, query: &GetPupperQuery) -> Self::Result {
         let r: Option<(u64, String, String)> =
-            match self.conn.prep_exec(
-                r"SELECT p._id, p.name, p.image
+            match self.conn.query(
+                format!(r"SELECT p.id, p.name, p.image
                 FROM puppers AS p
-                WHERE name = ?",
-                (&query.name,)
+                WHERE p.id = '{}'", &query.id)
             ) {
                 Ok(mut qr) => {
                     if let Some(row_result) = qr.next() {
@@ -134,7 +136,7 @@ impl HandlesQuery<&GetRandomPupperQuery> for VitessPupperQueriesHandler {
     fn handle(&mut self, query: &GetRandomPupperQuery) -> Self::Result {
         let r: Option<(u64, String, String)> =
             match self.conn.query(
-                r"SELECT p._id, p.name, p.image
+                r"SELECT p.id, p.name, p.image
                 FROM puppers@replica.puppers AS p
                 ORDER BY RAND()
                 LIMIT 1"
@@ -168,12 +170,12 @@ impl HandlesQuery<&GetTopTenPuppersQuery> for VitessPupperQueriesHandler {
 
     #[allow(unused_variables)]
     fn handle(&mut self, query: &GetTopTenPuppersQuery) -> Self::Result {
-        let winners: Vec<(String, f64)> =
+        let winners: Vec<(u64, f64)> =
         self.conn.query(
-            r"SELECT r.pupper_name as name, COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) as rating
+            r"SELECT r.pupper_id as pupper_id, COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) as rating
                 FROM puppers@replica.ratings AS r
-                GROUP BY r.pupper_name
-                ORDER BY rating asc
+                GROUP BY r.pupper_id
+                ORDER BY rating desc
                 LIMIT 10"
         ).map(|result| {
             // TODO: This might break with the nested unwrap.

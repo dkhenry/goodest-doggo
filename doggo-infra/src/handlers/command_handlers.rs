@@ -23,10 +23,9 @@ impl Handles<RatePupperCommand> for VitessPupperCommandHandler {
     type Result = Result<(), mysql::Error>;
 
     fn handle(&mut self, msg: RatePupperCommand) -> Self::Result {
-        match self.conn.prep_exec(
-            r"INSERT INTO ratings (pupper_name, rating)
-            VALUES (?,?)",
-            (msg.name, msg.rating,)
+        match self.conn.query(
+            format!(r"INSERT INTO ratings (pupper_id, rating)
+            VALUES ('{}','{}')", msg.pupper_id, msg.rating)
         ) {
             Ok(_) => Ok(()),
             Err(e) => Err(e),
