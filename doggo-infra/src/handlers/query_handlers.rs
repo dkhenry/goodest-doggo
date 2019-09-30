@@ -78,11 +78,12 @@ impl VitessPupperQueriesHandler {
             WHERE id in
             ('{}')", ids_str)
         ).map(|result| {
-            // TODO: Fix this unwrap.
-            result.map(|row_result| row_result.unwrap()).for_each(|row| {
-                let (id, name, image) = mysql::from_row(row);
-                pupper_map.entry(id).and_modify(|p| { p.name = name; p.image = image});
-            });
+            result.map(|row_result| {
+                row_result.map(|r| {
+                    let (id, name, image) = mysql::from_row(r);
+                    pupper_map.entry(id).and_modify(|p| { p.name = name; p.image = image});
+                })
+            })
         })?;
 
         let puppers = pupper_map.into_iter().map(|(_, p)| p).collect();
@@ -174,11 +175,10 @@ impl HandlesQuery<&GetTopTenPuppersQuery> for VitessPupperQueriesHandler {
                 ORDER BY rating desc
                 LIMIT 10"
         ).map(|result| {
-            // TODO: This might break with the nested unwrap.
-            result.map(|row_result| row_result.unwrap() ).map(|row| {
-                mysql::from_row(row)
-            }).collect()
-        })?;
+            result.map(|row_result| {
+                row_result.map(|r| mysql::from_row(r))
+            })
+        })?.collect::<Result<Vec<_>, mysql::Error>>()?;
 
         let winning_pups = self.puppers_from_rating_list(winners)?;
 
