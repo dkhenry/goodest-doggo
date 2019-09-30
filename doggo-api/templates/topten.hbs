@@ -144,6 +144,10 @@
             color: black;
             text-decoration: none;
         }
+
+        .rate-btn {
+            padding: 1rem;
+        }
     </style>
 </head>
 
@@ -163,6 +167,7 @@
     <h1 id="pupper" class="text-center">Top Puppers</b></h1>
     <div class="row">
     {{#each puppers as |p| ~}}
+        <a href="../puppers?id={{p.id}}">
         <div class="columns small-12 medium-6">
             <div class="blog-post align-center">
                 <div class='module-dog align-center' style='background-image: url("{{p.image}}")'>
@@ -177,7 +182,13 @@
                 </div>
             </div>
         </div>
+        </a>
     {{/each~}}
+        <div class="columns small-12">
+            <div class="rate-btn">
+                <a href="../puppers" class="success button large margin-top-3">Rate More Dogs!</a>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
