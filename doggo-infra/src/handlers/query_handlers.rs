@@ -78,11 +78,11 @@ impl VitessPupperQueriesHandler {
             WHERE id in
             ('{}')", ids_str)
         ).map(|result| {
-            result.map(|row_result| {
-                row_result.map(|r| {
+            result.for_each(|row_result| {
+                if let Ok(r) = row_result {
                     let (id, name, image) = mysql::from_row(r);
                     pupper_map.entry(id).and_modify(|p| { p.name = name; p.image = image});
-                })
+                }
             })
         })?;
 
@@ -178,7 +178,7 @@ impl HandlesQuery<&GetTopTenPuppersQuery> for VitessPupperQueriesHandler {
             result.map(|row_result| {
                 row_result.map(|r| mysql::from_row(r))
             })
-        })?.collect::<Result<Vec<_>, mysql::Error>>()?;
+        })?.collect::<Result<Vec<(u64, f64)>, mysql::Error>>()?;
 
         let winning_pups = self.puppers_from_rating_list(winners)?;
 
