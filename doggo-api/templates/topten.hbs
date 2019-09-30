@@ -161,10 +161,8 @@
     </div>
 
     <h1 id="pupper" class="text-center">Top Puppers</b></h1>
-    <div class="grid-container align-center">
-    <div class="grid-x align-center">
     {{#each puppers as |p| ~}}
-        <div class="cell small-12 medium-8 align-center">
+        <div class="row">
             <div class="blog-post align-center">
                 <div class='module-dog align-center' style='background-image: url("{{p.image}}")'>
                     <div class='dog-info'>
@@ -179,8 +177,6 @@
             </div>
         </div>
     {{/each~}}
-    </div>
-    </div>
 
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>
