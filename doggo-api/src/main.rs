@@ -26,8 +26,10 @@ fn index() -> Redirect {
 fn rate_pupper(rating: Form<Rating>) -> Result<&'static str,Status> {
     match command_handler().handle(rating.0.into()) {
         Ok(_) => Ok("Success"),
-        // TODO: Improve error handling.  This might not always mean the user messed up.
-        Err(_) => Err(Status::BadRequest),
+        // By this point in time it's unlikely that the issue is with the users request, as their request has
+        // already been validated by serde (types are correct, keys are correct).  We don't have foreign key constraints
+        // so a pupper_id that doesn't exist wouldn't kick back an error either (yet).
+        Err(_) => Err(Status::InternalServerError),
     }
 }
 
