@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: goodestdoggo
+  labels:
+    component: webapp
+    app: goodestdoggo
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8000
+  selector:
+    component: webapp
+    app: goodestdoggo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goodestdoggo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      component: webapp
+      app: goodestdoggo
+  template:
+    metadata:
+      labels:
+        component: webapp
+        app: goodestdoggo
+    spec:
+      containers:
+        - name: goodestdoggo
+          image: registry.planetscale.com/kubecon/goodestdoggo:demo
+          ports:
+          - containerPort: 8000
+            name: http
+          imagePullPolicy: Always
+          env:
+            - name: DATABASE_URL
+              value: mysql://mysql_user:mysql_password@localhost:3306/puppers

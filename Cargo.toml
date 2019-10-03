@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "doggo-api",
+    "doggo-core",
+    "doggo-infra",
+]

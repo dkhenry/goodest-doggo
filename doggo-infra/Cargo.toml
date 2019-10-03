@@ -1,0 +1,16 @@
+[package]
+name = "doggo-infra"
+version = "0.1.0"
+authors = ["Dan Kozlowski <koz@planetscale.com>", "Peter Farr <peter@prismaphonic.com>"]
+description = "goodest doggo allows you to vote for the goodest dog in the world.  It's up to you to find the goodest doggo and vote with your heart"
+keywords = ["dogs", "doggo", "vitess"]
+categories = ["database"]
+repository = "https://github.com/planetscale/goodest-doggo"
+edition = "2018"
+
+[dependencies]
+mysql = "16.1.0"
+domain_patterns = "0.2.141"
+doggo-core = { path = "../doggo-core" }
+lazy_static = "1.4.0"
+indexmap = "1.2.0"
