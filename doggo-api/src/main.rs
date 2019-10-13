@@ -4,7 +4,7 @@
 extern crate rocket;
 
 // Uncomment for local development
-// use dotenv::dotenv;
+ use dotenv::dotenv;
 
 use rocket::http::Status;
 use rocket::request::Form;
@@ -15,7 +15,8 @@ use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, 
 use doggo_api::Rating;
 use domain_patterns::command::Handles;
 use doggo_api::generate::{command_handler, query_handler};
-use doggo_core::dtos::{Pupper, Puppers};
+use doggo_core::dtos::Puppers;
+use doggo_infra::errors::Error as DbError;
 
 #[get("/")]
 fn index() -> Redirect {
@@ -26,10 +27,13 @@ fn index() -> Redirect {
 fn rate_pupper(rating: Form<Rating>) -> Result<&'static str,Status> {
     match command_handler().handle(rating.0.into()) {
         Ok(_) => Ok("Success"),
-        // By this point in time it's unlikely that the issue is with the users request, as their request has
-        // already been validated by serde (types are correct, keys are correct).  We don't have foreign key constraints
-        // so a pupper_id that doesn't exist wouldn't kick back an error either (yet).
-        Err(_) => Err(Status::InternalServerError),
+        Err(e) => {
+            if let DbError::UniqueViolation = e {
+                return Err(Status::Conflict)
+            } else {
+                return Err(Status::InternalServerError)
+            }
+        },
     }
 }
 
@@ -61,7 +65,7 @@ fn top_ten() -> Result<Template,Status> {
 }
 
 fn main() {
-//    dotenv().ok();
+    dotenv().ok();
 
     rocket::ignite()
         .attach(Template::fairing())
