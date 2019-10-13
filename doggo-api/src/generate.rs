@@ -1,12 +1,15 @@
-use doggo_infra::handlers::command_handlers::VitessPupperCommandHandler;
-use doggo_infra::handlers::query_handlers::VitessPupperQueriesHandler;
-use doggo_infra::handlers::VitessQueryRetryWrapper;
+use doggo_core::queries::pupper_query_handler::VitessPupperQueriesHandler;
+use doggo_infra::repositories::{VitessPupperRepository, VitessBallotRepository, PupperRepositoryRetryWrapper};
+use doggo_core::commands::pupper_commands_handler::VitessPupperCommandHandler;
 
-pub fn command_handler() -> VitessPupperCommandHandler {
-    VitessPupperCommandHandler::new()
+pub fn command_handler() -> VitessPupperCommandHandler<VitessBallotRepository> {
+    let repo = VitessBallotRepository::new();
+    VitessPupperCommandHandler::new(repo)
 }
 
-pub fn query_handler() -> VitessQueryRetryWrapper {
-    let main_handler = VitessPupperQueriesHandler::new();
-    VitessQueryRetryWrapper::new(main_handler)
+pub fn query_handler() -> VitessPupperQueriesHandler<PupperRepositoryRetryWrapper<VitessPupperRepository>> {
+    let repo = VitessPupperRepository::new();
+    let wrapped_repo = PupperRepositoryRetryWrapper::new(repo);
+    let handler = VitessPupperQueriesHandler::new(wrapped_repo);
+    handler
 }
