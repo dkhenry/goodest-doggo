@@ -7,8 +7,6 @@ ENV ROCKET_DATABASES '{ doggers = { url = "mysql://mysql_user:mysql_password@loc
 RUN apt-get update && apt-get -y install ca-certificates cmake musl-tools libssl-dev && rm -rf /var/lib/apt/lists/*
 
 COPY . .
-RUN rustup install nightly-2019-09-23
-RUN rustup override set nightly-2019-09-23
 RUN rustup target add x86_64-unknown-linux-musl
 
 # Sets the environment variable for the cargo build command that follows.
