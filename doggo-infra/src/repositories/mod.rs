@@ -8,11 +8,7 @@ lazy_static! {
 // Convenience type for handlers.
 type Conn = mysql::PooledConn;
 
-pub mod query_handlers;
-pub use query_handlers::*;
-
-pub mod query_retry_wrapper;
-pub use query_retry_wrapper::*;
-
-pub mod command_handlers;
-pub use command_handlers::*;
+pub mod pupper_repository;
+pub mod ballot_repository;
+pub use ballot_repository::*;
+pub use pupper_repository::*;

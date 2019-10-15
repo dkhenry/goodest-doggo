@@ -6,4 +6,6 @@ extern crate domain_derive;
 
 pub mod queries;
 pub mod commands;
+pub mod collection_abstractions;
+pub mod ballot;
 pub mod dtos;

@@ -1,19 +1,20 @@
 use mysql;
-use domain_patterns::query::HandlesQuery;
-use doggo_core::queries::pupper_queries::{GetPupperQuery, GetRandomPupperQuery, GetTopTenPuppersQuery};
 use doggo_core::dtos::Pupper;
 use super::CLIENT_POOL;
 use super::Conn;
 use indexmap::IndexMap;
+use doggo_core::collection_abstractions::PupperRepository;
 
-pub struct VitessPupperQueriesHandler {
+const RETRY_COUNT: i32 = 5;
+
+pub struct VitessPupperRepository {
     conn: Conn,
 }
 
-impl VitessPupperQueriesHandler {
+impl VitessPupperRepository {
     /// Associative function to create a new query handler from a connection.
-    pub fn new() -> VitessPupperQueriesHandler {
-        VitessPupperQueriesHandler {
+    pub fn new() -> VitessPupperRepository {
+        VitessPupperRepository {
             // "Clone" the pool (it's an Arc, so just increase count) and then get a connection for use
             // in this handler.
             conn: CLIENT_POOL.clone().get_conn().unwrap(),
@@ -92,15 +93,15 @@ impl VitessPupperQueriesHandler {
     }
 }
 
-impl HandlesQuery<&GetPupperQuery> for VitessPupperQueriesHandler {
-    type Result = Result<Option<Pupper>, mysql::Error>;
+impl PupperRepository for VitessPupperRepository {
+    type Error = mysql::Error;
 
-    fn handle(&mut self, query: &GetPupperQuery) -> Self::Result {
+    fn get(&mut self, pupper_id: u64) -> Result<Option<Pupper>, mysql::Error> {
         let r: Option<(u64, String, String)> =
             match self.conn.query(
                 format!(r"SELECT p.id, p.name, p.image
                 FROM puppers AS p
-                WHERE p.id = '{}'", &query.id)
+                WHERE p.id = '{}'", pupper_id)
             ) {
                 Ok(mut qr) => {
                     if let Some(row_result) = qr.next() {
@@ -124,13 +125,8 @@ impl HandlesQuery<&GetPupperQuery> for VitessPupperQueriesHandler {
         // Didn't find a pupper :-(
         Ok(None)
     }
-}
 
-impl HandlesQuery<&GetRandomPupperQuery> for VitessPupperQueriesHandler {
-    type Result = Result<Option<Pupper>, mysql::Error>;
-
-    #[allow(unused_variables)]
-    fn handle(&mut self, query: &GetRandomPupperQuery) -> Self::Result {
+    fn get_random(&mut self) -> Result<Option<Pupper>, mysql::Error> {
         let r: Option<(u64, String, String)> =
             match self.conn.query(
                 r"SELECT p.id, p.name, p.image
@@ -160,28 +156,78 @@ impl HandlesQuery<&GetRandomPupperQuery> for VitessPupperQueriesHandler {
         // Didn't find a pupper :-(
         Ok(None)
     }
-}
 
-impl HandlesQuery<&GetTopTenPuppersQuery> for VitessPupperQueriesHandler {
-    type Result = Result<Option<Vec<Pupper>>, mysql::Error>;
-
-    #[allow(unused_variables)]
-    fn handle(&mut self, query: &GetTopTenPuppersQuery) -> Self::Result {
+    fn get_top_ten(&mut self) -> Result<Option<Vec<Pupper>>, mysql::Error> {
         let winners: Vec<(u64, f64)> =
-        self.conn.query(
-            r"SELECT r.pupper_id as pupper_id, COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) as rating
+            self.conn.query(
+                r"SELECT r.pupper_id as pupper_id, COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) as rating
                 FROM puppers@replica.ratings AS r
                 GROUP BY r.pupper_id
                 ORDER BY rating desc
                 LIMIT 10"
-        ).map(|result| {
-            result.map(|row_result| {
-                row_result.map(|r| mysql::from_row(r))
-            })
-        })?.collect::<Result<Vec<(u64, f64)>, mysql::Error>>()?;
+            ).map(|result| {
+                result.map(|row_result| {
+                    row_result.map(|r| mysql::from_row(r))
+                })
+            })?.collect::<Result<Vec<(u64, f64)>, mysql::Error>>()?;
 
         let winning_pups = self.puppers_from_rating_list(winners)?;
 
         Ok(Some(winning_pups))
+    }
+}
+
+// WRAPPERS
+
+// PupperRepositoryRetryWrapper is a retry wrapper that is agnostic to underlying storage.
+pub struct PupperRepositoryRetryWrapper<T>
+    where T: PupperRepository
+{
+    repo: T
+}
+
+impl<T> PupperRepositoryRetryWrapper<T>
+    where T: PupperRepository
+{
+    pub fn new(repo: T) -> PupperRepositoryRetryWrapper<T> {
+        PupperRepositoryRetryWrapper {
+            repo,
+        }
+    }
+}
+
+impl<T> PupperRepository for PupperRepositoryRetryWrapper<T>
+    where T: PupperRepository
+{
+    type Error = T::Error;
+
+    fn get(&mut self, pupper_id: u64) -> Result<Option<Pupper>, Self::Error> {
+        for _ in 0..RETRY_COUNT {
+            if let Ok(result) = self.repo.get(pupper_id) {
+                return Ok(result);
+            }
+        }
+
+        self.repo.get(pupper_id)
+    }
+
+    fn get_random(&mut self) -> Result<Option<Pupper>, Self::Error> {
+        for _ in 0..RETRY_COUNT {
+            if let Ok(result) = self.repo.get_random() {
+                return Ok(result);
+            }
+        }
+
+        self.repo.get_random()
+    }
+
+    fn get_top_ten(&mut self) -> Result<Option<Vec<Pupper>>, Self::Error> {
+        for _ in 0..RETRY_COUNT {
+            if let Ok(result) = self.repo.get_top_ten() {
+                return Ok(result);
+            }
+        }
+
+        self.repo.get_top_ten()
     }
 }
