@@ -54,29 +54,20 @@ mod tests {
     #[test]
     fn cant_create_short_username() {
         let result = Username::try_from("Use".to_string());
-        let expected: Error = ValidationError::UsernameValidationError {
-                msg: format!("length must be between {} and {}", 4, 64),
-            }.into();
-        assert_eq!(expected, result.unwrap_err());
+        assert!(result.is_err());
     }
 
     #[test]
     fn cant_create_long_username() {
         let long_username = std::str::from_utf8(&[9; 65]).unwrap().to_string();
         let result = Username::try_from(long_username);
-        let expected: Error = ValidationError::UsernameValidationError {
-            msg: format!("length must be between {} and {}", 4, 64),
-        }.into();
-        assert_eq!(expected, result.unwrap_err());
+        assert!(result.is_err());
     }
 
     #[test]
     fn cant_create_invalid_char_username() {
         let invalid_chars = std::str::from_utf8(&[0; 32]).unwrap().to_string();
         let result = Username::try_from(invalid_chars);
-        let expected: Error = ValidationError::UsernameValidationError {
-            msg: format!("must contain only alphanumeric characters, underscores or periods"),
-        }.into();
-        assert_eq!(expected, result.unwrap_err());
+        assert!(result.is_err());
     }
 }

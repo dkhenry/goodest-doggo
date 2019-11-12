@@ -24,8 +24,8 @@ pub trait BallotRepository {
 }
 
 pub trait UserRepository {
-    type Error: 'static + Send;
+    type Error: std::error::Error + std::fmt::Display + 'static + Send;
 
-    fn get(&mut self, id: String) -> Result<Option<User>, Self::Error>;
+    fn get(&mut self, email: &String) -> Result<Option<User>, Self::Error>;
     fn insert(&mut self, user: &User) -> Result<Option<String>, Self::Error>;
 }

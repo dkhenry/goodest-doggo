@@ -15,7 +15,7 @@ impl Password {
     }
 
     // TODO: Change to return error type and act as a guard. Useful for changing account details.
-    pub fn validate_password(&self, password: String) -> bool {
+    pub fn matches(&self, password: &String) -> bool {
         bcrypt::verify(password, &self.value).unwrap()
     }
 }

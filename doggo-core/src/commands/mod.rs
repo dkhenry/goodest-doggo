@@ -3,11 +3,24 @@ use domain_patterns::message::Message;
 use crate::ballot::Ballot;
 
 pub mod pupper_commands_handler;
+pub mod user_commands_handler;
 
 #[derive(Command)]
 pub struct RatePupperCommand {
     pub pupper_id: u64,
     pub rating: u64,
+}
+
+#[derive(Command)]
+pub struct CreateUserCommand {
+    pub email: String,
+    pub password: String,
+}
+
+#[derive(Command)]
+pub struct LoginCommand {
+    pub email: String,
+    pub password: String,
 }
 
 impl Into<Ballot> for RatePupperCommand {

@@ -21,20 +21,20 @@ impl VitessUserRepository {
 }
 
 impl UserRepository for VitessUserRepository {
-    type Error = Error;
+    type Error = mysql::Error;
 
-    fn get(&mut self, id: String) -> Result<Option<User>, Self::Error> {
+    fn get(&mut self, email: &String) -> Result<Option<User>, Self::Error> {
         let user: Option<User> =
             match self.conn.query(
-                format!(r"SELECT u.email, u.password
+                format!(r"SELECT u.id, u.email, u.password
                 FROM users AS u
-                WHERE u.id = '{}'", id)
+                WHERE u.email = '{}'", email)
             ) {
                 Ok(mut qr) => {
                     if let Some(row_result) = qr.next() {
                         let row = row_result?;
-                        let (email, password) = mysql::from_row(row);
-                        Some(User::new_raw(id.clone(), email, password))
+                        let (id, email, password) = mysql::from_row(row);
+                        Some(User::new_raw(id, email, password))
                     } else {
                         None
                     }
@@ -42,7 +42,7 @@ impl UserRepository for VitessUserRepository {
 
                 // Underlying MySQL error type unrelated to existence of user in db.
                 Err(e) => {
-                    return Err(e.into());
+                    return Err(e);
                 }
             };
 
@@ -55,7 +55,7 @@ impl UserRepository for VitessUserRepository {
             VALUES ('{}','{}', '{}')", &user.id(), &user.email(), &user.password())
         ) {
             Ok(_) => Ok(Some(user.id())),
-            Err(e) => Err(Error::from(e))
+            Err(e) => Err(e)
         }
     }
 }

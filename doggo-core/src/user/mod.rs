@@ -30,7 +30,7 @@ impl User {
         }
     }
 
-    pub fn validate_password(&self, password: String) -> bool {
-        self.password.validate_password(password)
+    pub fn valid_password(&self, password: &String) -> bool {
+        self.password.matches(password)
     }
 }
