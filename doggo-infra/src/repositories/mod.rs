@@ -9,6 +9,8 @@ lazy_static! {
 type Conn = mysql::PooledConn;
 
 pub mod pupper_repository;
+pub use pupper_repository::*;
 pub mod ballot_repository;
 pub use ballot_repository::*;
-pub use pupper_repository::*;
+pub mod user_repository;
+pub use user_repository::*;

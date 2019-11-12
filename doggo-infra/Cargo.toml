@@ -15,3 +15,4 @@ doggo-core = { path = "../doggo-core" }
 lazy_static = "1.4.0"
 indexmap = "1.2.0"
 snafu = "0.5.0"
+ulid = "0.3.1"
