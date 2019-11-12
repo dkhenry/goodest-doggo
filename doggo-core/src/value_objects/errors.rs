@@ -7,4 +7,12 @@ pub enum ValidationError {
     UsernameValidationError {
         msg: String,
     },
+
+    #[snafu(display("Password supplied is invalid: {}", msg))]
+    PasswordValidationError {
+        msg: String,
+    },
+
+    #[snafu(display("Email supplied is not a valid email address"))]
+    EmailValidationError,
 }
