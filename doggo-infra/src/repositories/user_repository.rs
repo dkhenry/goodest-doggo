@@ -53,9 +53,9 @@ impl UserRepository for VitessUserRepository {
     }
 
     fn insert(&mut self, user: &User) -> Result<Option<Ulid>, Self::Error> {
-        match self.conn.prep_exec(
-            r"INSERT INTO users (id, email, password)
-            VALUES (?, ?, ?)", (user.bin_id().to_be_bytes(), &user.email().to_string(), &user.password().to_string())
+        match self.conn.query(
+            format!(r"INSERT INTO users (id, email, password)
+            VALUES (unhex('{:032x}'), '{}', '{}')", user.bin_id(), &user.email(), &user.password())
         ) {
             Ok(_) => Ok(Some(user.raw_id())),
             Err(e) => Err(e),
