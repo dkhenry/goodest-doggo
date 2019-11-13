@@ -129,7 +129,7 @@ fn index() -> Redirect {
 }
 
 #[put("/rating", data="<rating>")]
-fn rate_pupper(rating: Form<Rating>) -> Result<&'static str,Status> {
+fn rate_pupper(rating: Form<Rating>, user_id: UserId) -> Result<&'static str,Status> {
     match pupper_command_handler().handle(rating.0.into()) {
         Ok(_) => Ok("Success"),
         Err(e) => {
@@ -143,7 +143,7 @@ fn rate_pupper(rating: Form<Rating>) -> Result<&'static str,Status> {
 }
 
 #[get("/puppers")]
-fn get_rando_pupper() -> Result<Template,Status> {
+fn get_rando_pupper(_user_id: UserId) -> Result<Template,Status> {
     let pupper = query_handler().handle(GetRandomPupperQuery)
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
@@ -151,8 +151,13 @@ fn get_rando_pupper() -> Result<Template,Status> {
     Ok(Template::render("pupper",pupper))
 }
 
+#[get("/puppers", rank = 2)]
+fn puppers_redirect() -> Redirect {
+    Redirect::to(uri!(login))
+}
+
 #[get("/puppers?<id>")]
-fn get_puppers(id: u64) -> Result<Template,Status> {
+fn get_puppers(id: u64, _user_id: UserId) -> Result<Template,Status> {
     let pupper = query_handler().handle(GetPupperQuery { id, })
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
@@ -161,7 +166,7 @@ fn get_puppers(id: u64) -> Result<Template,Status> {
 }
 
 #[get("/topten")]
-fn top_ten() -> Result<Template,Status> {
+fn top_ten(_user_id: UserId) -> Result<Template,Status> {
     let puppers = query_handler().handle(GetTopTenPuppersQuery)
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
@@ -169,11 +174,16 @@ fn top_ten() -> Result<Template,Status> {
     Ok(Template::render("topten", Puppers::new(puppers)))
 }
 
+#[get("/topten", rank = 2)]
+fn top_ten_redirect() -> Redirect {
+    Redirect::to(uri!(login))
+}
+
 fn main() {
     dotenv().ok();
 
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![login,signup,handle_signup,handle_login,index,get_puppers,get_rando_pupper,rate_pupper,top_ten])
+        .mount("/", routes![login,signup,handle_signup,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect])
         .launch();
 }

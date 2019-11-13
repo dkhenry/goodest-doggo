@@ -183,6 +183,11 @@
                         Top Ten
                     </a>
                 </li>
+                <li>
+                    <a href="/logout" class="nav-link">
+                        Logout
+                    </a>
+                </li>
                 {% else %}
                 <li>
                     <a href="/login" class="nav-link">
