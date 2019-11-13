@@ -1,5 +1,4 @@
 use domain_patterns::command::Handles;
-use domain_patterns::models::Entity;
 use crate::collection_abstractions::UserRepository;
 use crate::commands::{CreateUserCommand, LoginCommand};
 use crate::Error;

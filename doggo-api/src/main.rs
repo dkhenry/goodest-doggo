@@ -25,7 +25,6 @@ use std::collections::HashMap;
 use rocket::request::FlashMessage;
 use rocket::request;
 use doggo_core::commands::{LoginCommand, CreateUserCommand};
-use std::convert::Into;
 
 struct UserId(String);
 
@@ -96,7 +95,7 @@ fn handle_login(
     }
 }
 
-#[post("/logout")]
+#[get("/logout")]
 fn logout(mut cookies: Cookies) -> Flash<Redirect> {
     cookies.remove_private(Cookie::named("user_id"));
     Flash::success(Redirect::to(uri!(login)), "Successfully logged out.")
@@ -130,7 +129,8 @@ fn index() -> Redirect {
 
 #[put("/rating", data="<rating>")]
 fn rate_pupper(rating: Form<Rating>, user_id: UserId) -> Result<&'static str,Status> {
-    match pupper_command_handler().handle(rating.0.into()) {
+    let cmd = rating.0.into_rate_pupper_cmd(user_id.0);
+    match pupper_command_handler().handle(cmd) {
         Ok(_) => Ok("Success"),
         Err(e) => {
             if let DbError::UniqueViolation = e {

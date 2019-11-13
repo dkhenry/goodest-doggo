@@ -2,7 +2,6 @@ use super::CLIENT_POOL;
 use super::Conn;
 use doggo_core::user::User;
 use doggo_core::collection_abstractions::UserRepository;
-use domain_patterns::models::Entity;
 use ulid::Ulid;
 
 pub struct VitessUserRepository {

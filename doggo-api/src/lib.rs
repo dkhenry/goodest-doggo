@@ -11,7 +11,16 @@ use doggo_core::commands::{RatePupperCommand, CreateUserCommand, LoginCommand};
 pub struct Rating {
     pub pupper_id: u64,
     pub rating: u64,
-    pub user_id: String,
+}
+
+impl Rating {
+    pub fn into_rate_pupper_cmd(self, user_id: String) -> RatePupperCommand {
+        RatePupperCommand {
+            pupper_id: self.pupper_id,
+            rating: self.rating,
+            user_id
+        }
+    }
 }
 
 #[derive(FromForm)]
@@ -26,15 +35,6 @@ pub struct Login {
     pub password: String,
 }
 
-impl Into<RatePupperCommand> for Rating {
-    fn into(self) -> RatePupperCommand {
-        RatePupperCommand {
-            pupper_id: self.pupper_id,
-            rating: self.rating,
-            user_id: self.user_id,
-        }
-    }
-}
 
 impl Into<CreateUserCommand> for Signup {
     fn into(self) -> CreateUserCommand {
