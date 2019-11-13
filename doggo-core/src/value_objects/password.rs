@@ -1,7 +1,6 @@
 use crate::errors::{Error, Result};
 use crate::value_objects::ValidationError;
 use domain_patterns::models::ValueObject;
-use regex::Regex;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Password {

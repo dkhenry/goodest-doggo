@@ -1,6 +1,5 @@
-use domain_patterns::models::{ValueObject, Entity, AggregateRoot};
-use crate::{Result, Error};
-use crate::value_objects::{Username, Password, Email};
+use crate::Result;
+use crate::value_objects::{Password, Email};
 use std::convert::TryFrom;
 use ulid::Ulid;
 
@@ -21,10 +20,20 @@ impl User {
         })
     }
 
+    /// Returns the underlying u128 inside the ulid for storing as a binary type.
+    pub fn bin_id(&self) -> u128 {
+        self.id.0
+    }
+
+    /// Returns the underlying id as an owned Ulid.
+    pub fn raw_id(&self) -> Ulid {
+        self.id.clone()
+    }
+
     /// This method allows you to construct a user bypassing validation from raw values.
-    pub fn new_raw(id: String, email: String, password: String) -> User {
+    pub fn new_raw(id: u128, email: String, password: String) -> User {
         User {
-            id: Ulid::from_string(&id).unwrap(),
+            id: Ulid(id),
             email: Email { value: email },
             password: Password { value: password },
         }

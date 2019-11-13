@@ -1,10 +1,11 @@
 use domain_patterns::command::Handles;
 use domain_patterns::models::Entity;
 use crate::collection_abstractions::UserRepository;
-use crate::commands::{RatePupperCommand, CreateUserCommand, LoginCommand};
+use crate::commands::{CreateUserCommand, LoginCommand};
 use crate::Error;
 use crate::user::User;
 use crate::Error::{DbFailure, ResourceNotFound, NotAuthorized};
+use ulid::Ulid;
 
 pub struct VitessUserCommandHandler<T>
     where T: UserRepository
@@ -25,7 +26,7 @@ impl<T> VitessUserCommandHandler<T>
 impl<T> Handles<CreateUserCommand> for VitessUserCommandHandler<T>
     where T: UserRepository
 {
-    type Result = Result<String, Error>;
+    type Result = Result<Ulid, Error>;
 
     fn handle(&mut self, msg: CreateUserCommand) -> Self::Result {
         let new_user = User::new(msg.email, msg.password)?;
@@ -42,7 +43,7 @@ impl<T> Handles<CreateUserCommand> for VitessUserCommandHandler<T>
 impl<T> Handles<LoginCommand> for VitessUserCommandHandler<T>
     where T: UserRepository
 {
-    type Result = Result<String, Error>;
+    type Result = Result<Ulid, Error>;
 
     fn handle(&mut self, msg: LoginCommand) -> Self::Result {
         let user = self.repo.get(&msg.email)
@@ -54,7 +55,6 @@ impl<T> Handles<LoginCommand> for VitessUserCommandHandler<T>
         }
 
         // We successfully logged in so return user id
-        // TODO: Do we need to return more for token?
-        Ok(user.id())
+        Ok(user.raw_id())
     }
 }

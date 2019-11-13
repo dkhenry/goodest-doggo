@@ -101,7 +101,7 @@ impl PupperRepository for VitessPupperRepository {
             match self.conn.query(
                 format!(r"SELECT p.id, p.name, p.image
                 FROM puppers AS p
-                WHERE p.id = '{}'", pupper_id)
+                WHERE p.id = {}", pupper_id)
             ) {
                 Ok(mut qr) => {
                     if let Some(row_result) = qr.next() {

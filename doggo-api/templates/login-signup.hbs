@@ -148,6 +148,63 @@
         .rate-btn {
             padding: 1rem;
         }
+
+        .sign-in-form {
+            padding: 1rem 1.5em;
+            border-radius: .5rem;
+            background-color: #cc4b37;
+        }
+
+        .sign-in-form h4 {
+            color: #f2f7ee;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .sign-in-form label {
+            text-transform: uppercase;
+            background-color: #cc4b37;
+            color: #f2f7ee;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .sign-in-form input {
+            background-color: #cccbc8;
+        }
+
+        .sign-in-form input:focus {
+            opacity: .9;
+        }
+
+        .sign-in-form-email,
+        .sign-in-form-password {
+            border-radius: 30px;
+            border: none;
+            opacity: .7;
+            transition: all ease .4s;
+        }
+
+        .sign-in-form-button {
+            border-radius: 30px;
+            border: 1px solid #ccc8c9;
+            background-color: #cc4b37;
+            background-color: transparent;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            padding: 1rem;
+            transition: all ease .4s;
+        }
+
+        .sign-in-form-button:hover {
+            background-color: #44c8ed;
+            border-color: #44c8ed;
+        }
     </style>
 </head>
 
@@ -184,30 +241,21 @@
         </div>
     </div>
 
-    <h1 id="pupper" class="text-center"><b>Top Puppers</b></h1>
-    <div class="row">
-    {{#each puppers as |p| ~}}
-        <a href="../puppers?id={{p.id}}">
-        <div class="columns small-12 medium-6">
-            <div class="blog-post align-center">
-                <div class='module-dog align-center' style='background-image: url("{{p.image}}")'>
-                    <div class='dog-info'>
-                        <h1 class='dog-title'>
-                            {{p.name}}
-                        </h1>
-                        <h3 class='dog-director'>
-                            {{p.rating}}
-                        </h3>
-                    </div>
+    <div class="row medium-12 large-10 columns">
+        <div class="blog-post">
+            <form method="POST">
+                <div class="sign-in-form">
+                    <h4 class="text-center">{{ title }}</h4>
+                    <label for="sign-in-form-email">Email</label>
+                    <input type="email" class="sign-in-form-email" id="sign-in-form-email" name="email">
+                    <label for="sign-in-form-password">Password</label>
+                    <input type="password" class="sign-in-form-password" id="sign-in-form-password" name="password">
+                    {{#if flash}}
+                        <span class="alert label">{{ flash }}</span>
+                    {{/if}}
+                    <button type="submit" class="sign-in-form-button">{{ title }}</button>
                 </div>
-            </div>
-        </div>
-        </a>
-    {{/each~}}
-        <div class="columns small-12">
-            <div class="rate-btn">
-                <a href="../puppers" class="success button large margin-top-3">Rate More Dogs!</a>
-            </div>
+            </form>
         </div>
     </div>
 
