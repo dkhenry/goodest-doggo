@@ -148,18 +148,6 @@
         .rate-btn {
             padding: 1rem;
         }
-
-        .log-in-form {
-            border: 1px solid #cacaca;
-            padding: 1rem;
-            margin: 2rem;
-            border-radius: 0;
-        }
-
-        .flash {
-            margin-bottom: 1rem;
-            margin-top: 0.5rem;
-        }
     </style>
 </head>
 
@@ -168,7 +156,7 @@
         <div class="top-bar-left">
             <ul class="menu">
                 <li class="menu-text">
-                    <a href="../" class="nav-link">
+                    <a href=".." class="nav-link">
                         Goodest Doggo
                     </a>
                 </li>
@@ -196,21 +184,30 @@
         </div>
     </div>
 
-    <div class="row medium-12 large-10 columns">
-        <div class="margin-top-3">
-            <form class="log-in-form" method="POST">
-                <h4 class="text-center">{{ title }}</h4>
-                <label>Email
-                    <input type="email" placeholder="somebody@example.com" name="email">
-                </label>
-                <label>Password
-                    <input type="password" placeholder="Password" name="password">
-                </label>
-                {{#if flash}}
-                    <span class="alert label flash">{{ flash }}</span>
-                {{/if}}
-                <p><input type="submit" class="button expanded" value="{{ title }}" /></p>
-            </form>
+    <h1 id="pupper" class="text-center"><b>Top Puppers</b></h1>
+    <div class="row">
+    {{#each puppers as |p| ~}}
+        <a href="../puppers?id={{p.id}}">
+        <div class="columns small-12 medium-6">
+            <div class="blog-post align-center">
+                <div class='module-dog align-center' style='background-image: url("{{p.image}}")'>
+                    <div class='dog-info'>
+                        <h1 class='dog-title'>
+                            {{p.name}}
+                        </h1>
+                        <h3 class='dog-director'>
+                            {{p.rating}}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    {{/each~}}
+        <div class="columns small-12">
+            <div class="rate-btn">
+                <a href="../puppers" class="success button large margin-top-3">Rate More Dogs!</a>
+            </div>
         </div>
     </div>
 
