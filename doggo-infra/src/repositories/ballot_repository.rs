@@ -24,7 +24,7 @@ impl BallotRepository for VitessBallotRepository {
 
     fn insert(&mut self, ballot: &Ballot) -> Result<(), Self::Error> {
         match self.conn.query(format!(r"INSERT INTO ratings (pupper_id, rating, user_id)
-            VALUES ({}, {}, unhex('{:032x}'))", &ballot.pupper_id, &ballot.rating, &ballot.user_id.0)
+            VALUES ({}, {}, '{}')", &ballot.pupper_id, &ballot.rating, &ballot.user_id)
         ) {
             Ok(_) => Ok(()),
             Err(e) => Err(Error::from(e))

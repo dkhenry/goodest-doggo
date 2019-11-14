@@ -5,6 +5,9 @@ IMAGE:=registry.planetscale.com/kubecon/goodestdoggo
 build: 
 	docker build -t $(IMAGE):demo -f build/Dockerfile .
 
+push: 
+	docker push $(IMAGE):demo
+
 clean:
 	@echo 'stopping docker containers'
 	@docker stop `docker ps -aq`

@@ -2,7 +2,7 @@ use super::CLIENT_POOL;
 use super::Conn;
 use doggo_core::user::User;
 use doggo_core::collection_abstractions::UserRepository;
-use ulid::Ulid;
+use domain_patterns::models::Entity;
 
 pub struct VitessUserRepository {
     conn: Conn,
@@ -32,10 +32,7 @@ impl UserRepository for VitessUserRepository {
                 Ok(mut qr) => {
                     if let Some(row_result) = qr.next() {
                         let row = row_result?;
-                        let (id_bytes, email, password) = mysql::from_row::<(Vec<u8>, String, String)>(row);
-                        let mut arr = [0; 16];
-                        arr.copy_from_slice(&id_bytes);
-                        let id = u128::from_ne_bytes(arr);
+                        let (id, email, password) = mysql::from_row::<(String, String, String)>(row);
                         Some(User::new_raw(id, email, password))
                     } else {
                         None
@@ -51,12 +48,12 @@ impl UserRepository for VitessUserRepository {
         Ok(user)
     }
 
-    fn insert(&mut self, user: &User) -> Result<Option<Ulid>, Self::Error> {
+    fn insert(&mut self, user: &User) -> Result<Option<String>, Self::Error> {
         match self.conn.query(
             format!(r"INSERT INTO users (id, email, password)
-            VALUES (unhex('{:032x}'), '{}', '{}')", user.bin_id(), &user.email(), &user.password())
+            VALUES ('{}', '{}', '{}')", user.id(), &user.email(), &user.password())
         ) {
-            Ok(_) => Ok(Some(user.raw_id())),
+            Ok(_) => Ok(Some(user.id())),
             Err(e) => Err(e),
         }
     }

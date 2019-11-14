@@ -63,11 +63,9 @@
             padding: 1rem;
             overflow: hidden;
             width: 100%;
-            display: flex;
             align-items: center;
             justify-content: center
         }
-
 
         h2 {
             margin: 0 0 0.5rem 0;

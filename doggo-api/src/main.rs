@@ -76,7 +76,7 @@ fn handle_login(
     let login_cmd: LoginCommand = user.0.into();
     match user_command_handler().handle(login_cmd) {
         Ok(user_id) => {
-            cookies.add_private(Cookie::new("user_id", user_id.to_string()));
+            cookies.add_private(Cookie::new("user_id", user_id));
             Ok(Redirect::to(uri!(index)))
         },
         Err(e) => {
@@ -109,7 +109,7 @@ fn handle_signup(
     let create_user_cmd: CreateUserCommand = user.0.into();
     match user_command_handler().handle(create_user_cmd) {
         Ok(user_id) => {
-            cookies.add_private(Cookie::new("user_id", user_id.to_string()));
+            cookies.add_private(Cookie::new("user_id", user_id));
             Ok(Redirect::to(uri!(index)))
         },
         Err(e) => {

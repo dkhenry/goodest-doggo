@@ -31,9 +31,9 @@ impl User {
     }
 
     /// This method allows you to construct a user bypassing validation from raw values.
-    pub fn new_raw(id: u128, email: String, password: String) -> User {
+    pub fn new_raw(id: String, email: String, password: String) -> User {
         User {
-            id: Ulid(id),
+            id: Ulid::from_string(&id).unwrap(),
             email: Email { value: email },
             password: Password { value: password },
         }

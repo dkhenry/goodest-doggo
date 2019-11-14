@@ -3,6 +3,9 @@
   "vindexes": {
     "hash": {
 		"type": "hash"
+	},
+    "binary_md5": {
+		"type": "binary_md5"
 	}
   },
   "tables": {
@@ -34,7 +37,7 @@
 		  "column_vindexes": [
 			  {
 				  "column": "id",
-				  "name": "hash"
+				  "name": "binary_md5"
 			  }
 		  ]
 	  }

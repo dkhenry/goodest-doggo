@@ -30,7 +30,7 @@ impl Into<Ballot> for RatePupperCommand {
         Ballot {
             rating: self.rating,
             pupper_id: self.pupper_id,
-            user_id: Ulid::from_string(&self.user_id).unwrap(),
+            user_id: self.user_id,
         }
     }
 }

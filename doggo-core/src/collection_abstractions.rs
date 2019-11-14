@@ -1,7 +1,6 @@
 use crate::dtos::Pupper;
 use crate::ballot::Ballot;
 use crate::user::User;
-use ulid::Ulid;
 
 /// PupperRepository for now is only needed for query methods, because we insert puppers directly
 /// into the database with a shell script.  In the future if we want to add the ability for users
@@ -28,5 +27,5 @@ pub trait UserRepository {
     type Error: std::error::Error + std::fmt::Display + 'static + Send;
 
     fn get(&mut self, email: &String) -> Result<Option<User>, Self::Error>;
-    fn insert(&mut self, user: &User) -> Result<Option<Ulid>, Self::Error>;
+    fn insert(&mut self, user: &User) -> Result<Option<String>, Self::Error>;
 }

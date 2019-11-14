@@ -80,7 +80,6 @@
             </div>
             <a href="../topten" class="success button large margin-top-3">Top Dogs</a>
         </div>
-    </div>
 {% endblock body %}
 {% block scripts %}
 <script>
