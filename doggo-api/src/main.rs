@@ -4,7 +4,7 @@
 extern crate rocket;
 
 // Uncomment for local development
-// use dotenv::dotenv;
+use dotenv::dotenv;
 
 use rocket::http::Status;
 use rocket::request::{Form, FromRequest};
@@ -12,10 +12,10 @@ use rocket::response::{Redirect, Flash};
 use rocket_contrib::templates::Template;
 use domain_patterns::query::HandlesQuery;
 use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, GetTopTenPuppersQuery};
-use doggo_api::{Rating, Signup, Login};
+use doggo_api::{Rating, Signup, Login, PuppersContext};
 use domain_patterns::command::Handles;
 use doggo_api::generate::{pupper_command_handler, query_handler, user_command_handler};
-use doggo_core::dtos::Puppers;
+use doggo_api::contexts::PupperContext;
 use doggo_infra::errors::Error as DbError;
 use doggo_core::errors::Error as CoreError;
 use rocket::Request;
@@ -150,7 +150,7 @@ fn get_rando_pupper(_user_id: UserId) -> Result<Template,Status> {
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
-    Ok(Template::render("pupper",pupper))
+    Ok(Template::render("pupper",PupperContext::from(pupper)))
 }
 
 #[get("/puppers", rank = 2)]
@@ -164,7 +164,7 @@ fn get_puppers(id: u64, _user_id: UserId) -> Result<Template,Status> {
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
-    Ok(Template::render("pupper",pupper))
+    Ok(Template::render("pupper",PupperContext::from(pupper)))
 }
 
 #[get("/topten")]
@@ -173,7 +173,7 @@ fn top_ten(_user_id: UserId) -> Result<Template,Status> {
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
-    Ok(Template::render("topten", Puppers::new(puppers)))
+    Ok(Template::render("topten", PuppersContext::from(puppers)))
 }
 
 #[get("/topten", rank = 2)]
@@ -182,7 +182,7 @@ fn top_ten_redirect() -> Redirect {
 }
 
 fn main() {
-    // dotenv().ok();
+    dotenv().ok();
 
     rocket::ignite()
         .attach(Template::fairing())

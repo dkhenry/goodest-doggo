@@ -94,7 +94,7 @@
       $.ajax({
         url: "/rating",
         type: "PUT",
-        data: { 'rating': rating, 'pupper_id': {{ id }} },
+        data: { 'rating': rating, 'pupper_id': {{ pupper_id }} },
         complete: function(result) {
           window.location="/puppers"
         }

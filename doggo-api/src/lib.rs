@@ -3,7 +3,12 @@
 #[macro_use]
 extern crate rocket;
 
+#[macro_use]
+extern crate serde_derive;
+
 pub mod generate;
+pub mod contexts;
+pub use contexts::*;
 
 use doggo_core::commands::{RatePupperCommand, CreateUserCommand, LoginCommand};
 
