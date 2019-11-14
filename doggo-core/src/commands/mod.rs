@@ -1,7 +1,6 @@
 use domain_patterns::command::Command;
 use domain_patterns::message::Message;
 use crate::ballot::Ballot;
-use ulid::Ulid;
 
 pub mod pupper_commands_handler;
 pub mod user_commands_handler;

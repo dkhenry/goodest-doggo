@@ -4,7 +4,7 @@
 extern crate rocket;
 
 // Uncomment for local development
-use dotenv::dotenv;
+// use dotenv::dotenv;
 
 use rocket::http::Status;
 use rocket::request::{Form, FromRequest};
@@ -182,7 +182,7 @@ fn top_ten_redirect() -> Redirect {
 }
 
 fn main() {
-    dotenv().ok();
+    // dotenv().ok();
 
     rocket::ignite()
         .attach(Template::fairing())
