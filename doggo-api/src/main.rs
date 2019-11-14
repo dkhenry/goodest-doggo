@@ -128,10 +128,12 @@ fn index() -> Redirect {
 }
 
 #[put("/rating", data="<rating>")]
-fn rate_pupper(rating: Form<Rating>, user_id: UserId) -> Result<&'static str,Status> {
+fn rate_pupper(rating: Form<Rating>, user_id: UserId) -> Result<Redirect, Status> {
     let cmd = rating.0.into_rate_pupper_cmd(user_id.0);
     match pupper_command_handler().handle(cmd) {
-        Ok(_) => Ok("Success"),
+        Ok(_) => {
+            Ok(Redirect::to(uri!(get_rando_pupper)))
+        },
         Err(e) => {
             if let DbError::UniqueViolation = e {
                 return Err(Status::Conflict)
