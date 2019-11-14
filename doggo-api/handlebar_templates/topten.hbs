@@ -156,7 +156,7 @@
         <div class="top-bar-left">
             <ul class="menu">
                 <li class="menu-text">
-                    <a href="../" class="nav-link">
+                    <a href=".." class="nav-link">
                         Goodest Doggo
                     </a>
                 </li>
@@ -170,11 +170,21 @@
                         Top Ten
                     </a>
                 </li>
+                <li>
+                    <a href="/login" class="nav-link">
+                        Login
+                    </a>
+                </li>
+                <li>
+                    <a href="/signup" class="nav-link">
+                        Signup
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
 
-    <h1 id="pupper" class="text-center">Top Puppers</b></h1>
+    <h1 id="pupper" class="text-center"><b>Top Puppers</b></h1>
     <div class="row">
     {{#each puppers as |p| ~}}
         <a href="../puppers?id={{p.id}}">

@@ -1,0 +1,223 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Goodest Doggo | Welcome</title>
+    <link rel="stylesheet" href="https://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.min.css">
+    <style>
+        .rating-block {
+            padding: 2px 5px;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            -webkit-justify-content: space-between;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+        }
+
+        .rating-block .ratings-type {
+            margin-right: 1rem;
+            margin-bottom: 0;
+        }
+
+        .rating-block .rating-block {
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .rating-block .rating-block-rating {
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+        }
+
+        .rating-block .star {
+            cursor: pointer;
+            stroke: #cc4b37;
+        }
+
+        .rating-block .rating-block-rating .star.selected polygon {
+            fill: #cc4b37;
+        }
+
+        .rating-block .rating-block-rating.is-voted .star polygon {
+            fill: #cc4b37;
+        }
+
+        .rating-block .rating-block-rating.is-voted .star.selected~.star polygon {
+            fill: transparent;
+        }
+
+        .blog-post {
+            background: white;
+            padding: 1rem;
+            overflow: hidden;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+
+        h2 {
+            margin: 0 0 0.5rem 0;
+            padding: 0 0 0.25rem 0;
+            border-bottom: 2px solid #333;
+        }
+
+        .module {
+            margin: 0 0 1rem 0;
+        }
+
+        .module-dog {
+            width: 100%;
+            margin-right: 2%;
+            height: 391px;
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: relative;
+        }
+
+        .module-dog:nth-of-type(3n) {
+            margin-right: 0;
+        }
+
+        .module-dog::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent 20%, black);
+            z-index: 1;
+        }
+
+        .dog-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 0.5rem;
+            color: white;
+            z-index: 2;
+        }
+
+        .dog-title {
+            margin: 0 0 0.5rem 0;
+        }
+
+        .dog-title::before {
+            content: "Name";
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #999;
+        }
+
+        .dog-director::before {
+            content: "Rating";
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #999;
+        }
+
+        .dog-director {
+            margin: 0;
+        }
+
+        .nav-link {
+            color: black;
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            color: black;
+            text-decoration: none;
+        }
+
+        .rate-btn {
+            padding: 1rem;
+        }
+
+        .log-in-form {
+            border: 1px solid #cacaca;
+            padding: 1rem;
+            margin: 2rem;
+            border-radius: 0;
+        }
+
+        .flash {
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <ul class="menu">
+                <li class="menu-text">
+                    <a href=".." class="nav-link">
+                        Goodest Doggo
+                    </a>
+                </li>
+                <li>
+                    <a href="/puppers" class="nav-link">
+                        Random Puppers
+                    </a>
+                </li>
+                <li>
+                    <a href="/topten" class="nav-link">
+                        Top Ten
+                    </a>
+                </li>
+                <li>
+                    <a href="/login" class="nav-link">
+                        Login
+                    </a>
+                </li>
+                <li>
+                    <a href="/signup" class="nav-link">
+                        Signup
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row medium-12 large-10 columns">
+        <div class="margin-top-3">
+            <form class="log-in-form" method="POST">
+                <h4 class="text-center">{{ title }}</h4>
+                <label>Email
+                    <input type="email" placeholder="somebody@example.com" name="email">
+                </label>
+                <label>Password
+                    <input type="password" placeholder="Password" name="password">
+                </label>
+                {{#if flash}}
+                    <span class="alert label flash">{{ flash }}</span>
+                {{/if}}
+                <p><input type="submit" class="button expanded" value="{{ title }}" /></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>
+    <script>
+          $(document).foundation();
+    </script>
+</body>
+</html>

@@ -3,6 +3,9 @@
   "vindexes": {
     "hash": {
 		"type": "hash"
+	},
+    "binary_md5": {
+		"type": "binary_md5"
 	}
   },
   "tables": {
@@ -29,6 +32,14 @@
 				"column": "id",
 				"sequence": "rating_seq"
 			}
-		}
-  }		  
+		},
+	  "users": {
+		  "column_vindexes": [
+			  {
+				  "column": "id",
+				  "name": "binary_md5"
+			  }
+		  ]
+	  }
+  }
 }

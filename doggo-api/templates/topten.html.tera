@@ -1,0 +1,29 @@
+{% extends "base" %}
+{% block body %}
+    <h1 id="pupper" class="text-center"><b>Top Puppers</b></h1>
+    <div class="row">
+    {% for p in puppers %}
+        <a href="../puppers?id={{p.id}}">
+        <div class="columns small-12 medium-6">
+            <div class="blog-post align-center">
+                <div class='module-dog align-center' style='background-image: url("{{p.image}}")'>
+                    <div class='dog-info'>
+                        <h1 class='dog-title'>
+                            {{p.name}}
+                        </h1>
+                        <h3 class='dog-director'>
+                            {{p.rating}}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    {% endfor %}
+        <div class="columns small-12">
+            <div class="rate-btn">
+                <a href="../puppers" class="success button large margin-top-3">Rate More Dogs!</a>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

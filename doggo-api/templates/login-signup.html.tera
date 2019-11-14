@@ -1,0 +1,22 @@
+{% extends "base" %}
+{% block body %}
+    <div class="row medium-12 large-10 columns">
+        <div class="margin-top-3">
+            <form class="log-in-form" method="POST">
+                <h4 class="text-center">{{ title }}</h4>
+                <label>Email
+                    <input type="email" placeholder="somebody@example.com" name="email">
+                </label>
+                <label>Password
+                    <input type="password" placeholder="Password" name="password">
+                </label>
+                {% if flash %}
+                    <span class="alert label flash">{{ flash }}</span>
+                {% endif %}
+                <p><input type="submit" class="button expanded" value="{{ title }}" /></p>
+            </form>
+        </div>
+    </div>
+{% endblock body %}
+
+
