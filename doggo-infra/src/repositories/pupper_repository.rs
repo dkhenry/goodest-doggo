@@ -23,10 +23,10 @@ impl VitessPupperRepository {
     // May optionally return a rating upon successful db interaction.  Underlying db
     // error will be communicated as a mysql::Error in the Err result variant returned.
     fn puppers_rating(&mut self, id: u64) -> Result<Option<f64>, mysql::Error> {
-        match self.conn.query(
-            format!(r"SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0)
+        match self.conn.prep_exec(
+            r"SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0)
             FROM puppers@replica.ratings as r
-            WHERE r.pupper_id='{}'", id)
+            WHERE r.pupper_id=?", (id,)
         ) {
             Ok(mut qr) => {
                 if let Some(row_result) = qr.next() {
@@ -98,10 +98,10 @@ impl PupperRepository for VitessPupperRepository {
 
     fn get(&mut self, pupper_id: u64) -> Result<Option<Pupper>, mysql::Error> {
         let r: Option<(u64, String, String)> =
-            match self.conn.query(
-                format!(r"SELECT p.id, p.name, p.image
+            match self.conn.prep_exec(
+                r"SELECT p.id, p.name, p.image
                 FROM puppers AS p
-                WHERE p.id = {}", pupper_id)
+                WHERE p.id = ?", (pupper_id,)
             ) {
                 Ok(mut qr) => {
                     if let Some(row_result) = qr.next() {
