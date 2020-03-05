@@ -4,6 +4,8 @@ use super::CLIENT_POOL;
 use super::Conn;
 use indexmap::IndexMap;
 use doggo_core::collection_abstractions::PupperRepository;
+use rand::Rng;
+use mysql::IsolationLevel;
 
 const RETRY_COUNT: i32 = 5;
 
@@ -127,30 +129,56 @@ impl PupperRepository for VitessPupperRepository {
     }
 
     fn get_random(&mut self) -> Result<Option<Pupper>, mysql::Error> {
-        let r: Option<(u64, String, String)> =
-            match self.conn.query(
-                r"SELECT p.id, p.name, p.image
-                FROM puppers@replica.puppers AS p
-                ORDER BY RAND()
-                LIMIT 1"
-            ) {
-                Ok(mut qr) => {
-                    if let Some(row_result) = qr.next() {
-                        let row = row_result?;
-                        Some(mysql::from_row::<(u64, String, String)>(row))
-                    } else {
-                        None
-                    }
-                },
+        let mut tx = self.conn.start_transaction(false, Some(IsolationLevel::ReadCommitted), Some(true))?;
 
-                // Underlying MySQL error type unrelated to existence of puppers in db.
-                Err(e) => {
-                    return Err(e);
+        let maybe_row_count: Option<u32> = match tx.query(
+            r"SELECT COUNT(*) as cnt
+            FROM puppers@replica.puppers AS p"
+        ) {
+            Ok(mut qr) => {
+                if let Some(row_result) = qr.next() {
+                    let row = row_result?;
+                    Some(mysql::from_row::<u32>(row))
+                } else {
+                    None
                 }
-            };
+            },
 
-        if let Some(pup) = r {
-            return self.pup_with_rating(pup);
+            Err(e) => {
+                return Err(e);
+            }
+        };
+
+        if let Some(row_count) = maybe_row_count {
+            let mut rng = rand::thread_rng();
+            let rand_row_num: u32 = rng.gen_range(0, row_count-1);
+
+            let r: Option<(u64, String, String)> =
+                match tx.query(
+                    format!(r"SELECT p.id, p.name, p.image
+                FROM puppers@replica.puppers AS p
+                LIMIT {},1", rand_row_num)
+                ) {
+                    Ok(mut qr) => {
+                        if let Some(row_result) = qr.next() {
+                            let row = row_result?;
+                            Some(mysql::from_row::<(u64, String, String)>(row))
+                        } else {
+                            None
+                        }
+                    },
+
+                    // Underlying MySQL error type unrelated to existence of puppers in db.
+                    Err(e) => {
+                        return Err(e);
+                    }
+                };
+
+            drop(tx);
+
+            if let Some(pup) = r {
+                return self.pup_with_rating(pup);
+            }
         }
 
         // Didn't find a pupper :-(
