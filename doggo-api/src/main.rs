@@ -4,27 +4,29 @@
 extern crate rocket;
 
 // Uncomment for local development
-use dotenv::dotenv;
+// use dotenv::dotenv;
 
-use rocket::http::Status;
-use rocket::request::{Form, FromRequest};
-use rocket::response::{Redirect, Flash};
-use rocket_contrib::templates::Template;
-use domain_patterns::query::HandlesQuery;
-use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, GetTopTenPuppersQuery};
-use doggo_api::{Rating, Signup, Login, PuppersContext};
-use domain_patterns::command::Handles;
-use doggo_api::generate::{pupper_command_handler, query_handler, user_command_handler};
 use doggo_api::contexts::PupperContext;
-use doggo_infra::errors::Error as DbError;
+use doggo_api::generate::{pupper_command_handler, query_handler, user_command_handler};
+use doggo_api::{Login, PuppersContext, Rating, Signup};
+use doggo_core::commands::{CreateUserCommand, LoginCommand};
 use doggo_core::errors::Error as CoreError;
-use rocket::Request;
+use doggo_core::queries::pupper_queries::{
+    GetPupperQuery, GetRandomPupperQuery, GetTopTenPuppersQuery,
+};
+use doggo_infra::errors::Error as DbError;
+use domain_patterns::command::Handles;
+use domain_patterns::query::HandlesQuery;
+use rocket::http::Status;
 use rocket::http::{Cookie, Cookies};
 use rocket::outcome::IntoOutcome;
-use std::collections::HashMap;
-use rocket::request::FlashMessage;
 use rocket::request;
-use doggo_core::commands::{LoginCommand, CreateUserCommand};
+use rocket::request::FlashMessage;
+use rocket::request::{Form, FromRequest};
+use rocket::response::{Flash, Redirect};
+use rocket::Request;
+use rocket_contrib::templates::Template;
+use std::collections::HashMap;
 
 struct UserId(String);
 
@@ -69,16 +71,13 @@ fn login(flash: Option<FlashMessage>) -> Template {
 }
 
 #[post("/login", data = "<user>")]
-fn handle_login(
-    mut cookies: Cookies,
-    user: Form<Login>,
-) -> Result<Redirect, Flash<Redirect>> {
+fn handle_login(mut cookies: Cookies, user: Form<Login>) -> Result<Redirect, Flash<Redirect>> {
     let login_cmd: LoginCommand = user.0.into();
     match user_command_handler().handle(login_cmd) {
         Ok(user_id) => {
             cookies.add_private(Cookie::new("user_id", user_id));
             Ok(Redirect::to(uri!(index)))
-        },
+        }
         Err(e) => {
             if let CoreError::NotAuthorized = e {
                 Err(Flash::error(
@@ -102,16 +101,13 @@ fn logout(mut cookies: Cookies) -> Flash<Redirect> {
 }
 
 #[post("/signup", data = "<user>")]
-fn handle_signup(
-    mut cookies: Cookies,
-    user: Form<Signup>,
-) -> Result<Redirect, Flash<Redirect>> {
+fn handle_signup(mut cookies: Cookies, user: Form<Signup>) -> Result<Redirect, Flash<Redirect>> {
     let create_user_cmd: CreateUserCommand = user.0.into();
     match user_command_handler().handle(create_user_cmd) {
         Ok(user_id) => {
             cookies.add_private(Cookie::new("user_id", user_id));
             Ok(Redirect::to(uri!(index)))
-        },
+        }
         Err(e) => {
             println!("{}", e);
             Err(Flash::error(
@@ -127,30 +123,29 @@ fn index() -> Redirect {
     Redirect::to("/puppers")
 }
 
-#[put("/rating", data="<rating>")]
+#[put("/rating", data = "<rating>")]
 fn rate_pupper(rating: Form<Rating>, user_id: UserId) -> Result<Redirect, Status> {
     let cmd = rating.0.into_rate_pupper_cmd(user_id.0);
     match pupper_command_handler().handle(cmd) {
-        Ok(_) => {
-            Ok(Redirect::to(uri!(get_rando_pupper)))
-        },
+        Ok(_) => Ok(Redirect::to(uri!(get_rando_pupper))),
         Err(e) => {
             if let DbError::UniqueViolation = e {
-                return Err(Status::Conflict)
+                return Err(Status::Conflict);
             } else {
-                return Err(Status::InternalServerError)
+                return Err(Status::InternalServerError);
             }
-        },
+        }
     }
 }
 
 #[get("/puppers")]
-fn get_rando_pupper(_user_id: UserId) -> Result<Template,Status> {
-    let pupper = query_handler().handle(GetRandomPupperQuery)
+fn get_rando_pupper(_user_id: UserId) -> Result<Template, Status> {
+    let pupper = query_handler()
+        .handle(GetRandomPupperQuery)
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
-    Ok(Template::render("pupper",PupperContext::from(pupper)))
+    Ok(Template::render("pupper", PupperContext::from(pupper)))
 }
 
 #[get("/puppers", rank = 2)]
@@ -159,17 +154,19 @@ fn puppers_redirect() -> Redirect {
 }
 
 #[get("/puppers?<id>")]
-fn get_puppers(id: u64, _user_id: UserId) -> Result<Template,Status> {
-    let pupper = query_handler().handle(GetPupperQuery { id, })
+fn get_puppers(id: u64, _user_id: UserId) -> Result<Template, Status> {
+    let pupper = query_handler()
+        .handle(GetPupperQuery { id })
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
-    Ok(Template::render("pupper",PupperContext::from(pupper)))
+    Ok(Template::render("pupper", PupperContext::from(pupper)))
 }
 
 #[get("/topten")]
-fn top_ten(_user_id: UserId) -> Result<Template,Status> {
-    let puppers = query_handler().handle(GetTopTenPuppersQuery)
+fn top_ten(_user_id: UserId) -> Result<Template, Status> {
+    let puppers = query_handler()
+        .handle(GetTopTenPuppersQuery)
         .map_err(|_| Status::InternalServerError)?
         .ok_or(Status::NotFound)?;
 
@@ -182,10 +179,26 @@ fn top_ten_redirect() -> Redirect {
 }
 
 fn main() {
-    dotenv().ok();
+    // dotenv().ok();
 
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![login,signup,handle_signup,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect])
+        .mount(
+            "/",
+            routes![
+                login,
+                signup,
+                handle_signup,
+                handle_login,
+                logout,
+                index,
+                puppers_redirect,
+                get_puppers,
+                get_rando_pupper,
+                rate_pupper,
+                top_ten,
+                top_ten_redirect
+            ],
+        )
         .launch();
 }
