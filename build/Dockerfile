@@ -1,7 +1,12 @@
 FROM rustlang/rust:nightly as builder
 
 ENV ROCKET_ENV prod
-ENV ROCKET_DATABASES '{ doggers = { url = "mysql://mysql_user:mysql_password@localhost:3306/doggers" } }'
+ENV ROCKET_DATABASES '{ doggers = { url = "mysql://user:password@localhost:3306/doggers" } }'
+
+# TODO: Remove once Rocket doesn't break on musl builds on newest nightly
+# For now set nightly we know works
+RUN rustup toolchain install nightly-2020-03-01
+RUN rustup default nightly-2020-03-01
 
 # muslc is required in order to build the rust image.
 RUN apt-get update && apt-get -y install ca-certificates cmake musl-tools libssl-dev && rm -rf /var/lib/apt/lists/*
