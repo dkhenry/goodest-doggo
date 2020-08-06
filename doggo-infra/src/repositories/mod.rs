@@ -1,12 +1,34 @@
-lazy_static! {
-    static ref CLIENT_POOL: mysql::Pool = {
-        let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        mysql::Pool::new(&database_url).unwrap()
-    };
-}
+use std::sync::Arc;
+use std::sync::Mutex;
 
 // Convenience type for handlers.
-type Conn = mysql::PooledConn;
+#[derive(Clone)]
+pub struct Pool(Arc<Mutex<Option<mysql::Pool>>>);
+
+impl Pool {
+    fn new(inner: Option<mysql::Pool>) -> Self {
+        Self{
+            0: Arc::new(Mutex::new(inner))
+        }
+    }
+
+    pub fn get_conn(&self) -> Result<mysql::PooledConn, mysql::Error> {
+        self.0.lock().unwrap().as_ref().unwrap().get_conn()
+    }
+
+    pub fn set_url(&self, url: impl AsRef<str>) {
+        *self.0.lock().unwrap() = Some(mysql::Pool::new(&url).unwrap());
+    }
+}
+
+lazy_static! {
+    pub static ref CLIENT_POOL: Pool = {
+        Pool::new(match std::env::var("DATABASE_URL") {
+            Ok(url) => Some(mysql::Pool::new(&url).unwrap()),
+            Err(_) => None
+        })
+    };
+}
 
 pub mod pupper_repository;
 pub use pupper_repository::*;
