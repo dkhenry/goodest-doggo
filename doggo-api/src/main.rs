@@ -5,7 +5,6 @@ extern crate rocket;
 
 // Uncomment for local development
 use dotenv::dotenv;
-
 use rocket::http::Status;
 use rocket::request::{Form, FromRequest};
 use rocket::response::{Redirect, Flash};
@@ -26,6 +25,15 @@ use rocket::request::FlashMessage;
 use rocket::request;
 use doggo_core::commands::{LoginCommand, CreateUserCommand};
 
+/*
+lazy_static! {
+    static ref CLIENT_POOL: mysql::Pool = {
+        let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+        mysql::Pool::new(&database_url).unwrap()
+    };
+}
+*/
+
 struct UserId(String);
 
 impl<'a, 'r> FromRequest<'a, 'r> for UserId {
@@ -39,6 +47,15 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserId {
             .map(|id| UserId(id))
             .or_forward(())
     }
+}
+
+#[get("/configure")]
+fn configure() -> Template {
+    let mut context = HashMap::new();
+
+    context.insert("title", "Configure Database");
+
+    Template::render("configure-database", context)
 }
 
 #[get("/signup")]
@@ -99,6 +116,18 @@ fn handle_login(
 fn logout(mut cookies: Cookies) -> Flash<Redirect> {
     cookies.remove_private(Cookie::named("user_id"));
     Flash::success(Redirect::to(uri!(login)), "Successfully logged out.")
+}
+
+#[derive(FromForm)]
+struct Configure {
+    database_url: String,
+}
+
+#[post("/configure", data = "<database_url>")]
+fn handle_configure(
+    database_url : Form<Configure>,
+) -> Flash<Redirect> {    
+    Flash::success(Redirect::to(uri!(login)), format!("Database URL set to: {}",database_url.0.database_url))
 }
 
 #[post("/signup", data = "<user>")]
@@ -186,6 +215,6 @@ fn main() {
 
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![login,signup,handle_signup,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect])
+        .mount("/", routes![configure,handle_configure,login,signup,handle_signup,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect])
         .launch();
 }

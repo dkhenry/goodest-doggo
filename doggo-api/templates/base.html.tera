@@ -197,6 +197,11 @@
                         Signup
                     </a>
                 </li>
+                <li>
+                    <a href="/configure" class="nav-link">
+                        Configure Database
+                    </a>
+                </li>		
                 {% endif %}
             </ul>
         </div>
