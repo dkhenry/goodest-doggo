@@ -25,15 +25,6 @@ use rocket::request::FlashMessage;
 use rocket::request;
 use doggo_core::commands::{LoginCommand, CreateUserCommand};
 
-/*
-lazy_static! {
-    static ref CLIENT_POOL: mysql::Pool = {
-        let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-        mysql::Pool::new(&database_url).unwrap()
-    };
-}
-*/
-
 struct UserId(String);
 
 impl<'a, 'r> FromRequest<'a, 'r> for UserId {
@@ -127,6 +118,7 @@ struct Configure {
 fn handle_configure(
     database_url : Form<Configure>,
 ) -> Flash<Redirect> {    
+    doggo_infra::CLIENT_POOL.set_url(&database_url.0.database_url);
     Flash::success(Redirect::to(uri!(login)), format!("Database URL set to: {}",database_url.0.database_url))
 }
 
