@@ -19,6 +19,10 @@ impl Pool {
     pub fn set_url(&self, url: impl AsRef<str>) {
         *self.0.lock().unwrap() = Some(mysql::Pool::new(&url).unwrap());
     }
+
+    pub fn is_configured(&self) -> bool {
+        self.0.lock().unwrap().is_some()
+    }
 }
 
 lazy_static! {
