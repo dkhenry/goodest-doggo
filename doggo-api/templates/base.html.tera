@@ -170,6 +170,7 @@
                         Goodest Doggo
                     </a>
                 </li>
+                {% if has_database %}
                 {% if logged_in %}
                 <li>
                     <a href="/puppers" class="nav-link">
@@ -197,11 +198,13 @@
                         Signup
                     </a>
                 </li>
+                {% endif %}
+                {% else %}
                 <li>
                     <a href="/configure" class="nav-link">
                         Configure Database
                     </a>
-                </li>		
+                </li>
                 {% endif %}
             </ul>
         </div>
