@@ -1,7 +1,7 @@
 use mysql;
 use doggo_core::dtos::Pupper;
 use super::CLIENT_POOL;
-use super::Conn;
+use super::Pool;
 use indexmap::IndexMap;
 use doggo_core::collection_abstractions::PupperRepository;
 use rand::Rng;
@@ -10,7 +10,7 @@ use mysql::IsolationLevel;
 const RETRY_COUNT: i32 = 5;
 
 pub struct VitessPupperRepository {
-    conn: Conn,
+    pool: Pool,
 }
 
 impl VitessPupperRepository {
@@ -19,13 +19,13 @@ impl VitessPupperRepository {
         VitessPupperRepository {
             // "Clone" the pool (it's an Arc, so just increase count) and then get a connection for use
             // in this handler.
-            conn: CLIENT_POOL.clone().get_conn().unwrap(),
+            pool: CLIENT_POOL.clone(),
         }
     }
     // May optionally return a rating upon successful db interaction.  Underlying db
     // error will be communicated as a mysql::Error in the Err result variant returned.
     fn puppers_rating(&mut self, id: u64) -> Result<Option<f64>, mysql::Error> {
-        match self.conn.query(
+        match self.pool.get_conn().unwrap().query(
             format!(r"SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0)
             FROM puppers@replica.ratings as r
             WHERE r.pupper_id='{}'", id)
@@ -75,7 +75,7 @@ impl VitessPupperRepository {
 
         let ids_str: String = list.iter().map(|(i, _)| i.to_string()).collect::<Vec<String>>().join("','");
 
-        self.conn.query(
+        self.pool.get_conn().unwrap().query(
             format!(r"SELECT p.id as id, p.name as name, p.image as image
             FROM puppers AS p
             WHERE id in
@@ -100,7 +100,7 @@ impl PupperRepository for VitessPupperRepository {
 
     fn get(&mut self, pupper_id: u64) -> Result<Option<Pupper>, mysql::Error> {
         let r: Option<(u64, String, String)> =
-            match self.conn.query(
+            match self.pool.get_conn().unwrap().query(
                 format!(r"SELECT p.id, p.name, p.image
                 FROM puppers AS p
                 WHERE p.id = {}", pupper_id)
@@ -129,7 +129,8 @@ impl PupperRepository for VitessPupperRepository {
     }
 
     fn get_random(&mut self) -> Result<Option<Pupper>, mysql::Error> {
-        let mut tx = self.conn.start_transaction(false, Some(IsolationLevel::ReadCommitted), Some(true))?;
+        let mut conn = self.pool.get_conn().unwrap();
+        let mut tx = conn.start_transaction(false, Some(IsolationLevel::ReadCommitted), Some(true))?;
 
         let maybe_row_count: Option<u32> = match tx.query(
             r"SELECT COUNT(*) as cnt
@@ -187,7 +188,7 @@ impl PupperRepository for VitessPupperRepository {
 
     fn get_top_ten(&mut self) -> Result<Option<Vec<Pupper>>, mysql::Error> {
         let winners: Vec<(u64, f64)> =
-            self.conn.query(
+            self.pool.get_conn().unwrap().query(
                 r"SELECT r.pupper_id as pupper_id, COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) as rating
                 FROM puppers@replica.ratings AS r
                 GROUP BY r.pupper_id

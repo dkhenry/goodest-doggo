@@ -5,7 +5,6 @@ extern crate rocket;
 
 // Uncomment for local development
 use dotenv::dotenv;
-
 use rocket::http::Status;
 use rocket::request::{Form, FromRequest};
 use rocket::response::{Redirect, Flash};
@@ -15,16 +14,26 @@ use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, 
 use doggo_api::{Rating, Signup, Login, PuppersContext};
 use domain_patterns::command::Handles;
 use doggo_api::generate::{pupper_command_handler, query_handler, user_command_handler};
-use doggo_api::contexts::PupperContext;
+use doggo_api::contexts::{GenericContext, PupperContext};
 use doggo_infra::errors::Error as DbError;
 use doggo_core::errors::Error as CoreError;
 use rocket::Request;
 use rocket::http::{Cookie, Cookies};
 use rocket::outcome::IntoOutcome;
-use std::collections::HashMap;
 use rocket::request::FlashMessage;
 use rocket::request;
 use doggo_core::commands::{LoginCommand, CreateUserCommand};
+
+macro_rules! connection_check {
+    () => {{
+        if !doggo_infra::CLIENT_POOL.is_configured() {
+            return Err(Flash::error(
+                Redirect::to(uri!(configure)),
+                "Database is not configured"
+            ));
+        }
+    }}
+}
 
 struct UserId(String);
 
@@ -41,13 +50,17 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserId {
     }
 }
 
+#[get("/configure")]
+fn configure() -> Template {
+    let context = GenericContext::with_title("Configure Database");
+    Template::render("configure-database", context)
+}
+
 #[get("/signup")]
-fn signup() -> Template {
-    let mut context = HashMap::new();
-
-    context.insert("title", "Sign Up");
-
-    Template::render("login-signup", context)
+fn signup() -> Result<Template, Flash<Redirect>> {
+    connection_check!();
+    let context = GenericContext::with_title("Sign Up");
+    Ok(Template::render("login-signup", context))
 }
 
 #[get("/login")]
@@ -56,16 +69,15 @@ fn login_user(_user: UserId) -> Redirect {
 }
 
 #[get("/login", rank = 2)]
-fn login(flash: Option<FlashMessage>) -> Template {
-    let mut context = HashMap::new();
-
-    context.insert("title", "Login");
+fn login(flash: Option<FlashMessage>) -> Result<Template, Flash<Redirect>> {
+    connection_check!();
+    let mut context = GenericContext::with_title("Login");
 
     if let Some(ref msg) = flash {
         context.insert("flash", msg.msg());
     }
 
-    Template::render("login-signup", context)
+    Ok(Template::render("login-signup", context))
 }
 
 #[post("/login", data = "<user>")]
@@ -99,6 +111,19 @@ fn handle_login(
 fn logout(mut cookies: Cookies) -> Flash<Redirect> {
     cookies.remove_private(Cookie::named("user_id"));
     Flash::success(Redirect::to(uri!(login)), "Successfully logged out.")
+}
+
+#[derive(FromForm)]
+struct Configure {
+    database_url: String,
+}
+
+#[post("/configure", data = "<database_url>")]
+fn handle_configure(
+    database_url : Form<Configure>,
+) -> Flash<Redirect> {
+    doggo_infra::CLIENT_POOL.set_url(&database_url.0.database_url);
+    Flash::success(Redirect::to(uri!(login)), format!("Database URL set to: {}",database_url.0.database_url))
 }
 
 #[post("/signup", data = "<user>")]
@@ -186,6 +211,6 @@ fn main() {
 
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![login,signup,handle_signup,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect])
+        .mount("/", routes![configure,handle_configure,login,signup,handle_signup,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect])
         .launch();
 }

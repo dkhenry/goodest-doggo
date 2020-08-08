@@ -4,11 +4,8 @@
         <div class="margin-top-3">
             <form class="log-in-form" method="POST">
                 <h4 class="text-center">{{ title }}</h4>
-                <label>Email
-                    <input type="email" placeholder="somebody@example.com" name="email">
-                </label>		
-                <label>Password
-                    <input type="password" placeholder="Password" name="password">
+                <label>Database Url
+                    <input type="text" placeholder="mysql://user:password@host:3306/puppers" name="database_url">
                 </label>
                 {% if flash %}
                     <span class="alert label flash">{{ flash }}</span>

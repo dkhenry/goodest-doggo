@@ -1,11 +1,11 @@
 use super::CLIENT_POOL;
-use super::Conn;
+use super::Pool;
 use doggo_core::collection_abstractions::BallotRepository;
 use doggo_core::ballot::Ballot;
 use crate::errors::Error;
 
 pub struct VitessBallotRepository {
-    conn: Conn,
+    pool: Pool,
 }
 
 impl VitessBallotRepository {
@@ -14,7 +14,7 @@ impl VitessBallotRepository {
         VitessBallotRepository {
             // "Clone" the pool (it's an Arc, so just increase count) and then get a connection for use
             // in this handler.
-            conn: CLIENT_POOL.clone().get_conn().unwrap(),
+            pool: CLIENT_POOL.clone(),
         }
     }
 }
@@ -23,7 +23,7 @@ impl BallotRepository for VitessBallotRepository {
     type Error = Error;
 
     fn insert(&mut self, ballot: &Ballot) -> Result<(), Self::Error> {
-        match self.conn.query(format!(r"INSERT INTO ratings (pupper_id, rating, user_id)
+        match self.pool.get_conn().unwrap().query(format!(r"INSERT INTO ratings (pupper_id, rating, user_id)
             VALUES ({}, {}, '{}')", &ballot.pupper_id, &ballot.rating, &ballot.user_id)
         ) {
             Ok(_) => Ok(()),
