@@ -27,15 +27,11 @@ impl VitessPupperRepository {
     // May optionally return a rating upon successful db interaction.  Underlying db
     // error will be communicated as a mysql::Error in the Err result variant returned.
     fn puppers_rating(&mut self, id: u64) -> Result<Option<f64>, mysql::Error> {
-        match self.pool.query_first(
+        self.pool.query_first(
             format!(r"SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0)
             FROM puppers@replica.ratings as r
             WHERE r.pupper_id='{}'", id)
-        ) {
-            Ok(Some(row)) => Ok(Some(row)),
-            Ok(None) => Ok(None),
-            Err(e) => Err(e),
-        }
+        )
     }
 
     fn pup_with_rating(
@@ -96,20 +92,11 @@ impl PupperRepository for VitessPupperRepository {
     type Error = mysql::Error;
 
     fn get(&mut self, pupper_id: u64) -> Result<Option<Pupper>, mysql::Error> {
-        let r: Option<(u64, String, String)> =
-            match self.pool.query_first(
-                format!(r"SELECT p.id, p.name, p.image
-                FROM puppers AS p
-                WHERE p.id = {}", pupper_id)
-            ) {
-                Ok(Some(row)) => Some(row),
-                Ok(None) => None,
-
-                // Underlying MySQL error type unrelated to existence of puppers in db.
-                Err(e) => {
-                    return Err(e);
-                }
-            };
+        let r: Option<(u64, String, String)> = self.pool.query_first(
+            format!(r"SELECT p.id, p.name, p.image
+            FROM puppers AS p
+            WHERE p.id = {}", pupper_id)
+        )?;
 
         if let Some(pup) = r {
             return self.pup_with_rating(pup);
@@ -127,36 +114,20 @@ impl PupperRepository for VitessPupperRepository {
                 .set_access_mode(Some(AccessMode::ReadOnly))
         )?;
 
-        let maybe_row_count: Option<u32> = match tx.query_first(
+        let maybe_row_count: Option<u32> = tx.query_first(
             r"SELECT COUNT(*) as cnt
             FROM puppers@replica.puppers AS p"
-        ) {
-            Ok(Some(row)) => Some(row),
-            Ok(None) => None,
-
-            Err(e) => {
-                return Err(e);
-            }
-        };
+        )?;
 
         if let Some(row_count) = maybe_row_count {
             let mut rng = rand::thread_rng();
             let rand_row_num: u32 = rng.gen_range(0, row_count-1);
 
-            let r: Option<(u64, String, String)> =
-                match tx.query_first(
-                    format!(r"SELECT p.id, p.name, p.image
+            let r: Option<(u64, String, String)> = tx.query_first(
+                format!(r"SELECT p.id, p.name, p.image
                 FROM puppers@replica.puppers AS p
                 LIMIT {},1", rand_row_num)
-                ) {
-                    Ok(Some(row)) => Some(row),
-                    Ok(None) => None,
-
-                    // Underlying MySQL error type unrelated to existence of puppers in db.
-                    Err(e) => {
-                        return Err(e);
-                    }
-                };
+            )?;
 
             drop(tx);
 

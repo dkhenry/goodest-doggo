@@ -28,17 +28,12 @@ impl UserRepository for VitessUserRepository {
                 format!(r"SELECT u.id, u.email, u.password
                 FROM users AS u
                 WHERE u.email = '{}'", email)
-            ) {
-                Ok(Some(row)) => {
+            )? {
+                Some(row) => {
                     let (id, email, password) = row;
                     Some(User::new_raw(id, email, password))
                 },
-                Ok(None) => None,
-
-                // Underlying MySQL error type unrelated to existence of user in db.
-                Err(e) => {
-                    return Err(e);
-                }
+                None => None
             };
 
         Ok(user)
