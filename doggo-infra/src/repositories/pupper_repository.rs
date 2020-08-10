@@ -5,7 +5,9 @@ use super::Pool;
 use indexmap::IndexMap;
 use doggo_core::collection_abstractions::PupperRepository;
 use rand::Rng;
+use mysql::AccessMode;
 use mysql::IsolationLevel;
+use mysql::prelude::Queryable;
 
 const RETRY_COUNT: i32 = 5;
 
@@ -25,18 +27,13 @@ impl VitessPupperRepository {
     // May optionally return a rating upon successful db interaction.  Underlying db
     // error will be communicated as a mysql::Error in the Err result variant returned.
     fn puppers_rating(&mut self, id: u64) -> Result<Option<f64>, mysql::Error> {
-        match self.pool.get_conn().unwrap().query(
+        match self.pool.query_first(
             format!(r"SELECT COALESCE(SUM(r.rating)/COUNT(r.rating),0.0)
             FROM puppers@replica.ratings as r
             WHERE r.pupper_id='{}'", id)
         ) {
-            Ok(mut qr) => {
-                if let Some(row_result) = qr.next() {
-                    let row = row_result?;
-                    return Ok(Some(mysql::from_row(row)));
-                }
-                Ok(None)
-            }
+            Ok(Some(row)) => Ok(Some(row)),
+            Ok(None) => Ok(None),
             Err(e) => Err(e),
         }
     }
@@ -75,7 +72,7 @@ impl VitessPupperRepository {
 
         let ids_str: String = list.iter().map(|(i, _)| i.to_string()).collect::<Vec<String>>().join("','");
 
-        self.pool.get_conn().unwrap().query(
+        self.pool.get_conn().unwrap().query_iter(
             format!(r"SELECT p.id as id, p.name as name, p.image as image
             FROM puppers AS p
             WHERE id in
@@ -100,19 +97,13 @@ impl PupperRepository for VitessPupperRepository {
 
     fn get(&mut self, pupper_id: u64) -> Result<Option<Pupper>, mysql::Error> {
         let r: Option<(u64, String, String)> =
-            match self.pool.get_conn().unwrap().query(
+            match self.pool.query_first(
                 format!(r"SELECT p.id, p.name, p.image
                 FROM puppers AS p
                 WHERE p.id = {}", pupper_id)
             ) {
-                Ok(mut qr) => {
-                    if let Some(row_result) = qr.next() {
-                        let row = row_result?;
-                        Some(mysql::from_row::<(u64, String, String)>(row))
-                    } else {
-                        None
-                    }
-                },
+                Ok(Some(row)) => Some(row),
+                Ok(None) => None,
 
                 // Underlying MySQL error type unrelated to existence of puppers in db.
                 Err(e) => {
@@ -129,21 +120,19 @@ impl PupperRepository for VitessPupperRepository {
     }
 
     fn get_random(&mut self) -> Result<Option<Pupper>, mysql::Error> {
-        let mut conn = self.pool.get_conn().unwrap();
-        let mut tx = conn.start_transaction(false, Some(IsolationLevel::ReadCommitted), Some(true))?;
+        let mut conn = self.pool.get_conn()?;
+        let mut tx = conn.start_transaction(
+            mysql::TxOpts::default()
+                .set_isolation_level(Some(IsolationLevel::ReadCommitted))
+                .set_access_mode(Some(AccessMode::ReadOnly))
+        )?;
 
-        let maybe_row_count: Option<u32> = match tx.query(
+        let maybe_row_count: Option<u32> = match tx.query_first(
             r"SELECT COUNT(*) as cnt
             FROM puppers@replica.puppers AS p"
         ) {
-            Ok(mut qr) => {
-                if let Some(row_result) = qr.next() {
-                    let row = row_result?;
-                    Some(mysql::from_row::<u32>(row))
-                } else {
-                    None
-                }
-            },
+            Ok(Some(row)) => Some(row),
+            Ok(None) => None,
 
             Err(e) => {
                 return Err(e);
@@ -155,19 +144,13 @@ impl PupperRepository for VitessPupperRepository {
             let rand_row_num: u32 = rng.gen_range(0, row_count-1);
 
             let r: Option<(u64, String, String)> =
-                match tx.query(
+                match tx.query_first(
                     format!(r"SELECT p.id, p.name, p.image
                 FROM puppers@replica.puppers AS p
                 LIMIT {},1", rand_row_num)
                 ) {
-                    Ok(mut qr) => {
-                        if let Some(row_result) = qr.next() {
-                            let row = row_result?;
-                            Some(mysql::from_row::<(u64, String, String)>(row))
-                        } else {
-                            None
-                        }
-                    },
+                    Ok(Some(row)) => Some(row),
+                    Ok(None) => None,
 
                     // Underlying MySQL error type unrelated to existence of puppers in db.
                     Err(e) => {
@@ -188,7 +171,7 @@ impl PupperRepository for VitessPupperRepository {
 
     fn get_top_ten(&mut self) -> Result<Option<Vec<Pupper>>, mysql::Error> {
         let winners: Vec<(u64, f64)> =
-            self.pool.get_conn().unwrap().query(
+            self.pool.get_conn().unwrap().query_iter(
                 r"SELECT r.pupper_id as pupper_id, COALESCE(SUM(r.rating)/COUNT(r.rating),0.0) as rating
                 FROM puppers@replica.ratings AS r
                 GROUP BY r.pupper_id
