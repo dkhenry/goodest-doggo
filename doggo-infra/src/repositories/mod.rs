@@ -20,8 +20,8 @@ impl Pool {
     fn new(inner: Option<mysql::Pool>) -> Self {
         Self{
             0: Arc::new(Mutex::new(ConfigurablePool{
+                is_working: inner.is_some(),
                 inner: inner,
-                is_working: true
             }))
         }
     }
