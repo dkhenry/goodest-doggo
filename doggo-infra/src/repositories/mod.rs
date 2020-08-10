@@ -15,7 +15,6 @@ pub struct ConfigurablePool {
 pub struct Pool(Arc<Mutex<ConfigurablePool>>);
 
 // TODO:  impl Queryable for Pool
-// TODO:  DRY
 impl Pool {
     fn new(inner: Option<mysql::Pool>) -> Self {
         Self{
@@ -40,16 +39,9 @@ impl Pool {
 
     pub fn set_url(&self, url: impl AsRef<str>) -> Result<(), mysql::Error> {
         let guard = &mut self.0.lock().unwrap();
-        guard.inner = Some(match mysql::Pool::new(&url) {
-            Ok(v) => {
-                guard.is_working = true;
-                v
-            },
-            Err(e) => {
-                guard.is_working = false;
-                return Err(e)
-            }
-        });
+        let result = mysql::Pool::new(&url);
+        guard.is_working = result.is_ok();
+        guard.inner = Some(result?);
         Ok(())
     }
 
@@ -65,44 +57,23 @@ impl Pool {
 
     pub fn query<T: FromRow>(&self, query: impl AsRef<str>) -> mysql::Result<Vec<T>> {
         let mut connection = self.get_conn()?;
-        match connection.query(query.as_ref()) {
-            Ok(v) => {
-                self.0.lock().unwrap().is_working = true;
-                Ok(v)
-            },
-            Err(e) => {
-                self.0.lock().unwrap().is_working = false;
-                Err(e)
-            }
-        }
+        let result = connection.query(query.as_ref());
+        self.0.lock().unwrap().is_working = result.is_ok();
+        result
     }
 
     pub fn query_first<T: FromRow>(&self, query: impl AsRef<str>) -> mysql::Result<Option<T>> {
         let mut connection = self.get_conn()?;
-        match connection.query_first(query.as_ref()) {
-            Ok(v) => {
-                self.0.lock().unwrap().is_working = true;
-                Ok(v)
-            },
-            Err(e) => {
-                self.0.lock().unwrap().is_working = false;
-                Err(e)
-            }
-        }
+        let result = connection.query_first(query.as_ref());
+        self.0.lock().unwrap().is_working = result.is_ok();
+        result
     }
 
     pub fn query_drop(&self, query: impl AsRef<str>) -> mysql::Result<()> {
         let mut connection = self.get_conn()?;
-        match connection.query_drop(query.as_ref()) {
-            Ok(v) => {
-                self.0.lock().unwrap().is_working = true;
-                Ok(v)
-            },
-            Err(e) => {
-                self.0.lock().unwrap().is_working = false;
-                Err(e)
-            }
-        }
+        let result = connection.query_drop(query.as_ref());
+        self.0.lock().unwrap().is_working = result.is_ok();
+        result
     }
 }
 
