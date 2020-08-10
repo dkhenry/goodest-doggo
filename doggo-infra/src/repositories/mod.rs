@@ -3,25 +3,36 @@ use std::sync::Mutex;
 
 // Convenience type for handlers.
 #[derive(Clone)]
-pub struct Pool(Arc<Mutex<Option<mysql::Pool>>>);
+pub struct ConfigurablePool {
+    inner: Option<mysql::Pool>
+}
+
+#[derive(Clone)]
+pub struct Pool(Arc<Mutex<ConfigurablePool>>);
 
 impl Pool {
     fn new(inner: Option<mysql::Pool>) -> Self {
         Self{
-            0: Arc::new(Mutex::new(inner))
+            0: Arc::new(Mutex::new(ConfigurablePool{
+                inner: inner
+            }))
         }
     }
 
     pub fn get_conn(&self) -> Result<mysql::PooledConn, mysql::Error> {
-        self.0.lock().unwrap().as_ref().unwrap().get_conn()
+        let guard = &self.0.lock().unwrap();
+        let inner = guard.inner.as_ref().unwrap();
+        inner.get_conn()
     }
 
     pub fn set_url(&self, url: impl AsRef<str>) {
-        *self.0.lock().unwrap() = Some(mysql::Pool::new(&url).unwrap());
+        let guard = &mut self.0.lock().unwrap();
+        guard.inner = Some(mysql::Pool::new(&url).unwrap());
     }
 
     pub fn is_configured(&self) -> bool {
-        self.0.lock().unwrap().is_some()
+        let guard = &self.0.lock().unwrap();
+        guard.inner.is_some()
     }
 }
 
