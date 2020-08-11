@@ -199,12 +199,12 @@ fn rate_pupper(rating: Form<Rating>, user_id: UserId) -> Result<Redirect, Status
 }
 
 #[get("/puppers")]
-fn get_rando_pupper(_user_id: UserId) -> Result<Template,Status> {
-    let pupper = query_handler().handle(GetRandomPupperQuery)
-        .map_err(|_| Status::InternalServerError)?
-        .ok_or(Status::NotFound)?;
-
-    Ok(Template::render("pupper",PupperContext::from(pupper)))
+fn get_rando_pupper(_user_id: UserId) -> Result<Template, Status> {
+    match query_handler().handle(GetRandomPupperQuery) {
+        Ok(Some(pupper)) => Ok(Template::render("pupper", PupperContext::from(pupper))),
+        Ok(None) => Err(Status::NotFound),
+        Err(_) => Ok(Template::render("pupper", GenericContext::with_title("Rando Pupper")))
+    }
 }
 
 #[get("/puppers", rank = 2)]
