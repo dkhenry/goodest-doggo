@@ -6,6 +6,8 @@ extern crate rocket;
 // Uncomment for local development
 use dotenv::dotenv;
 use rocket::http::Status;
+use rocket::http::ext::IntoOwned;
+use rocket::http::uri::Absolute;
 use rocket::request::{Form, FromRequest};
 use rocket::response::{Redirect, Flash};
 use rocket_contrib::templates::Template;
@@ -118,13 +120,39 @@ struct Configure {
     database_url: String,
 }
 
+#[derive(Debug)]
+struct ConfigureRequest {
+    referer: Option<String>
+}
+
+impl<'a, 'r> FromRequest<'a, 'r> for ConfigureRequest {
+    type Error = !;
+
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
+        rocket::Outcome::Success(Self{
+            referer: request.headers().get_one("Referer").map(|s| s.to_string())
+        })
+    }
+}
+
 #[post("/configure", data = "<database_url>")]
-fn handle_configure(
-    database_url : Form<Configure>,
-) -> Flash<Redirect> {
+fn handle_configure(req: ConfigureRequest, database_url: Form<Configure>) -> Flash<Redirect> {
     let url = database_url.0.database_url.trim();
+    // If the database wasn't already configured, redirect to signup
+    // If no Referer request header was set, or if it was invalid, redirect to login
+    // Otherwise, redirect to whatever page sent the request
+    let redirect_target = match doggo_infra::CLIENT_POOL.is_configured() {
+        true => match req.referer {
+            Some(v) => match Absolute::parse(&v) {
+                Ok(uri) => uri.origin().unwrap().clone().into_owned(),
+                Err(_) => uri!(login)
+            },
+            None => uri!(login)
+        },
+        false => uri!(signup)
+    };
     doggo_infra::CLIENT_POOL.set_url(url);
-    Flash::success(Redirect::to(uri!(login)), format!("Database URL set to: {}", url))
+    Flash::success(Redirect::to(redirect_target), format!("Database URL set to: {}", url))
 }
 
 #[post("/signup", data = "<user>")]
