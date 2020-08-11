@@ -45,6 +45,11 @@ impl Pool {
         Ok(())
     }
 
+    pub fn set_is_working(&self, is_working: bool) {
+        let guard = &mut self.0.lock().unwrap();
+        guard.is_working = is_working;
+    }
+
     pub fn is_configured(&self) -> bool {
         let guard = &self.0.lock().unwrap();
         guard.inner.is_some()
