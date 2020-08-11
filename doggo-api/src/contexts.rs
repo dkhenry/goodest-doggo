@@ -53,6 +53,8 @@ pub struct PupperContext {
     pub image: String,
     pub rating: Option<f64>,
     pub logged_in: bool,
+    pub has_database: bool,
+    pub database_is_working: bool,
 }
 
 impl From<Pupper> for PupperContext {
@@ -63,6 +65,8 @@ impl From<Pupper> for PupperContext {
             image: p.image,
             rating: p.rating,
             logged_in: true,
+            has_database: doggo_infra::CLIENT_POOL.is_configured(),
+            database_is_working: doggo_infra::CLIENT_POOL.is_working(),
         }
     }
 }
