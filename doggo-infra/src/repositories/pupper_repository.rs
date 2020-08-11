@@ -108,26 +108,44 @@ impl PupperRepository for VitessPupperRepository {
 
     fn get_random(&mut self) -> Result<Option<Pupper>, mysql::Error> {
         let mut conn = self.pool.get_conn()?;
-        let mut tx = conn.start_transaction(
+        let mut tx = match conn.start_transaction(
             mysql::TxOpts::default()
                 .set_isolation_level(Some(IsolationLevel::ReadCommitted))
                 .set_access_mode(Some(AccessMode::ReadOnly))
-        )?;
+            ) {
+            Ok(v) => v,
+            Err(e) => {
+                self.pool.set_is_working(false);
+                return Err(e);
+            }
+        };
 
-        let maybe_row_count: Option<u32> = tx.query_first(
+        let maybe_row_count: Option<u32> = match tx.query_first(
             r"SELECT COUNT(*) as cnt
             FROM puppers@replica.puppers AS p"
-        )?;
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                self.pool.set_is_working(false);
+                return Err(e);
+            }
+        };
 
         if let Some(row_count) = maybe_row_count {
             let mut rng = rand::thread_rng();
             let rand_row_num: u32 = rng.gen_range(0, row_count-1);
 
-            let r: Option<(u64, String, String)> = tx.query_first(
+            let r: Option<(u64, String, String)> = match tx.query_first(
                 format!(r"SELECT p.id, p.name, p.image
                 FROM puppers@replica.puppers AS p
                 LIMIT {},1", rand_row_num)
-            )?;
+            ) {
+                Ok(v) => v,
+                Err(e) => {
+                    self.pool.set_is_working(false);
+                    return Err(e);
+                }
+            };
 
             drop(tx);
 
