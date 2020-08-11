@@ -1,5 +1,6 @@
 {% extends "base" %}
 {% block body %}
+    {% if database_is_working %}
     <div class="row medium-8 large-7 columns">
         <div class="blog-post">
             <h1 id="pupper">Pupper Name: <b>{{ name }}</b></h1>
@@ -80,8 +81,10 @@
             </div>
             <a href="../topten" class="success button large margin-top-3">Top Dogs</a>
         </div>
+    {% endif %}
 {% endblock body %}
 {% block scripts %}
+{% if database_is_working %}
 <script>
     $('[data-rating] .star').on('click', function() {
       var selectedCssClass = 'selected';
@@ -101,4 +104,5 @@
       })
     });
 </script>
+{% endif %}
 {% endblock scripts %}
