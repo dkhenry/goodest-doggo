@@ -122,8 +122,9 @@ struct Configure {
 fn handle_configure(
     database_url : Form<Configure>,
 ) -> Flash<Redirect> {
-    doggo_infra::CLIENT_POOL.set_url(&database_url.0.database_url);
-    Flash::success(Redirect::to(uri!(login)), format!("Database URL set to: {}",database_url.0.database_url))
+    let url = database_url.0.database_url.trim();
+    doggo_infra::CLIENT_POOL.set_url(url);
+    Flash::success(Redirect::to(uri!(login)), format!("Database URL set to: {}", url))
 }
 
 #[post("/signup", data = "<user>")]
