@@ -203,6 +203,7 @@
                         Logout
                     </a>
                 </li>
+                <li><a href="/view-data" class="nav-link">View Data</a></li>
                 {% else %}
                 <li>
                     <a href="/login" class="nav-link">
