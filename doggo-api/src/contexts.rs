@@ -78,6 +78,8 @@ impl From<Pupper> for PupperContext {
 pub struct PuppersContext {
     pub puppers: Vec<Pupper>,
     pub logged_in: bool,
+    pub has_database: bool,
+    pub database_is_working: bool,
 }
 
 impl From<Vec<Pupper>> for PuppersContext {
@@ -85,6 +87,8 @@ impl From<Vec<Pupper>> for PuppersContext {
         Self {
             puppers,
             logged_in: true,
+            has_database: doggo_infra::CLIENT_POOL.is_configured(),
+            database_is_working: doggo_infra::CLIENT_POOL.is_working(),
         }
     }
 }
