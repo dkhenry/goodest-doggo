@@ -53,3 +53,8 @@ impl From<LoginOrSignup> for LoginCommand {
     }
 }
 
+#[derive(FromForm)]
+pub struct ViewData {
+    pub query_id: usize,
+}
+
