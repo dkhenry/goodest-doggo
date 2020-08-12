@@ -13,7 +13,7 @@ use rocket::response::{Redirect, Flash};
 use rocket_contrib::templates::Template;
 use domain_patterns::query::HandlesQuery;
 use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, GetTopTenPuppersQuery};
-use doggo_api::{Rating, Signup, Login, PuppersContext};
+use doggo_api::{Rating, LoginOrSignup, PuppersContext};
 use domain_patterns::command::Handles;
 use doggo_api::generate::{pupper_command_handler, query_handler, user_command_handler};
 use doggo_api::contexts::{GenericContext, PupperContext};
@@ -58,13 +58,6 @@ fn configure() -> Template {
     Template::render("configure-database", context)
 }
 
-#[get("/signup")]
-fn signup() -> Result<Template, Flash<Redirect>> {
-    connection_check!();
-    let context = GenericContext::with_title("Sign Up");
-    Ok(Template::render("login-signup", context))
-}
-
 #[get("/login")]
 fn login_user(_user: UserId) -> Redirect {
     Redirect::to(uri!(index))
@@ -82,13 +75,20 @@ fn login(flash: Option<FlashMessage>) -> Result<Template, Flash<Redirect>> {
     Ok(Template::render("login-signup", context))
 }
 
-#[post("/login", data = "<user>")]
+#[post("/authenticate", data = "<input>")]
 fn handle_login(
     mut cookies: Cookies,
-    user: Form<Login>,
+    input: Form<LoginOrSignup>,
 ) -> Result<Redirect, Flash<Redirect>> {
-    let login_cmd: LoginCommand = user.0.into();
-    match user_command_handler().handle(login_cmd) {
+    let result = match input.0.action.as_ref() {
+        "Login" => user_command_handler().handle(LoginCommand::from(input.0)),
+        "Sign Up" => user_command_handler().handle(CreateUserCommand::from(input.0)),
+        _ => return Err(Flash::error(
+            Redirect::to(uri!(login)),
+            "Invalid action. Please try again."
+        ))
+    };
+    match result {
         Ok(user_id) => {
             cookies.add_private(Cookie::new("user_id", user_id));
             Ok(Redirect::to(uri!(index)))
@@ -100,6 +100,7 @@ fn handle_login(
                     "Invalid email/password.",
                 ))
             } else {
+                println!("{:?}", e);
                 Err(Flash::error(
                     Redirect::to(uri!(login)),
                     "Internal server error. Please try again.",
@@ -149,31 +150,10 @@ fn handle_configure(req: ConfigureRequest, database_url: Form<Configure>) -> Fla
             },
             None => uri!(login)
         },
-        false => uri!(signup)
+        false => uri!(login)
     };
     doggo_infra::CLIENT_POOL.set_url(url);
     Flash::success(Redirect::to(redirect_target), format!("Database URL set to: {}", url))
-}
-
-#[post("/signup", data = "<user>")]
-fn handle_signup(
-    mut cookies: Cookies,
-    user: Form<Signup>,
-) -> Result<Redirect, Flash<Redirect>> {
-    let create_user_cmd: CreateUserCommand = user.0.into();
-    match user_command_handler().handle(create_user_cmd) {
-        Ok(user_id) => {
-            cookies.add_private(Cookie::new("user_id", user_id));
-            Ok(Redirect::to(uri!(index)))
-        },
-        Err(e) => {
-            println!("{}", e);
-            Err(Flash::error(
-                Redirect::to(uri!(login)),
-                "Internal server error. Please try again.",
-            ))
-        }
-    }
 }
 
 #[get("/")]
@@ -240,6 +220,6 @@ fn main() {
 
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![configure,handle_configure,login,signup,handle_signup,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect])
+        .mount("/", routes![configure,handle_configure,login,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect])
         .launch();
 }

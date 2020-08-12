@@ -29,32 +29,27 @@ impl Rating {
 }
 
 #[derive(FromForm)]
-pub struct Signup {
+pub struct LoginOrSignup {
     pub email: String,
     pub password: String,
+    pub action: String,
 }
 
-#[derive(FromForm)]
-pub struct Login {
-    pub email: String,
-    pub password: String,
-}
-
-
-impl Into<CreateUserCommand> for Signup {
-    fn into(self) -> CreateUserCommand {
-        CreateUserCommand {
-            email: self.email,
-            password: self.password,
+impl From<LoginOrSignup> for CreateUserCommand {
+    fn from(value: LoginOrSignup) -> Self {
+        Self{
+            email: value.email,
+            password: value.password
         }
     }
 }
 
-impl Into<LoginCommand> for Login {
-    fn into(self) -> LoginCommand {
-        LoginCommand {
-            email: self.email,
-            password: self.password,
+impl From<LoginOrSignup> for LoginCommand {
+    fn from(value: LoginOrSignup) -> Self {
+        Self{
+            email: value.email,
+            password: value.password
         }
     }
 }
+
