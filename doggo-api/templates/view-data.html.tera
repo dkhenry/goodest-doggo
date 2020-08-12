@@ -1,0 +1,28 @@
+{% extends "base" %}
+{% block body %}
+    <div class="row medium-12 large-10 columns">
+        <div class="margin-top-3">
+            <form method="POST">
+                <h4 class="text-center">View Data</h4>
+                {% for query in queries %}
+                <p>
+                    <span class="query">USE {{ query.database }}; {{ query.query }};</span><br />
+                    {% if loop.index0 == query_id %}
+                    <table><tbody>
+                        {% for row in query_result %}
+                        <tr>
+                            {% for column in row %}
+                            <td>{{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody></table>
+                    {% endif %}
+                    <input type="submit" class="button" name="query_id" value="{{ loop.index0 }}" />
+                </p>
+                {% endfor %}
+            </form>
+        </div>
+    </div>
+{% endblock body %}
+
