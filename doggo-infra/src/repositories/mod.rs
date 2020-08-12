@@ -100,3 +100,6 @@ pub mod ballot_repository;
 pub use ballot_repository::*;
 pub mod user_repository;
 pub use user_repository::*;
+pub mod data_repository;
+pub use data_repository::*;
+
