@@ -29,3 +29,9 @@ pub trait UserRepository {
     fn get(&mut self, email: &String) -> Result<Option<User>, Self::Error>;
     fn insert(&mut self, user: &User) -> Result<Option<String>, Self::Error>;
 }
+
+pub trait DataRepository {
+	type Error: 'static + Send;
+	fn get(&mut self, database: impl AsRef<str>, query: impl AsRef<str>) -> Result<Vec<Vec<String>>, Self::Error>;
+}
+
