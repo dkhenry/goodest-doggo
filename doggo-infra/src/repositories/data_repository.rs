@@ -2,6 +2,7 @@ use super::CLIENT_POOL;
 use super::Pool;
 use mysql::prelude::Queryable;
 use doggo_core::collection_abstractions::DataRepository;
+use doggo_core::dtos::DataQueryResult;
 
 pub struct VitessDataRepository {
     pool: Pool,
@@ -16,12 +17,8 @@ impl VitessDataRepository {
             pool: CLIENT_POOL.clone(),
         }
     }
-}
 
-impl DataRepository for VitessDataRepository {
-    type Error = mysql::Error;
-
-    fn get(&mut self, database: impl AsRef<str>, query: impl AsRef<str>) -> Result<Vec<Vec<String>>, Self::Error> {
+    fn query_for_database(&mut self, database: impl AsRef<str>, query: impl AsRef<str>) -> Result<Vec<Vec<String>>, mysql::Error> {
         // TODO:  If a multi-part query (e.g. "SELECT 1; SELECT 2;") is
         //    included, but not all the queries have the same number of rows
         //    (e.g. "SELECT 1, 2; SELECT 3;"), the resulting front-end table
@@ -34,13 +31,24 @@ impl DataRepository for VitessDataRepository {
             .map(|row| {
                 let mut row_as_strings = Vec::with_capacity(row.len());
                 for i in 0..row.len() {
-                    println!("{:?}", row[i].as_sql(true));
                     row_as_strings.push(row[i].as_sql(true));
                 }
                 row_as_strings
             })
             .collect();
         Ok(rows)
+    }
+}
+
+impl DataRepository for VitessDataRepository {
+    type Error = mysql::Error;
+
+    fn get(&mut self, query: impl AsRef<str>) -> Result<DataQueryResult, Self::Error> {
+        Ok(DataQueryResult{
+            all_shards: self.query_for_database("puppers", &query)?,
+            first_shard: self.query_for_database("puppers:-80", &query)?,
+            last_shard: self.query_for_database("puppers:80-", &query)?
+        })
     }
 }
 

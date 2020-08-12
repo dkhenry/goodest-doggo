@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use doggo_core::dtos::Pupper;
+use doggo_core::dtos::{DataQueryResult, Pupper};
 use doggo_core::queries::data_queries::ViewDataQuery;
 use serde::ser::{Serialize, Serializer, SerializeMap};
 
@@ -99,7 +99,7 @@ impl From<Vec<Pupper>> for PuppersContext {
 pub struct ViewDataContext {
     pub queries: &'static [ViewDataContextQuery],
     pub query_id: Option<usize>,
-    pub query_result: Option<Vec<Vec<String>>>,
+    pub query_result: Option<DataQueryResult>,
     pub has_database: bool,
     pub database_is_working: bool,
 }
@@ -115,7 +115,7 @@ impl ViewDataContext {
         }
     }
 
-    pub fn with_result(id: usize, result: Vec<Vec<String>>) -> Self {
+    pub fn with_result(id: usize, result: DataQueryResult) -> Self {
         let mut context = Self::new();
         context.query_id = Some(id);
         context.query_result = Some(result);
@@ -125,29 +125,24 @@ impl ViewDataContext {
 
 #[derive(Serialize)]
 pub struct ViewDataContextQuery {
-    // TODO:  It probably makes sense for database to be an Option
-    pub database: &'static str,
     pub query: &'static str,
 }
 
 impl ViewDataContextQuery {
-    pub const fn new(database: &'static str, query: &'static str) -> Self {
-        Self{database, query}
+    pub const fn new(query: &'static str) -> Self {
+        Self{query}
     }
 }
 
 impl From<&ViewDataContextQuery> for ViewDataQuery {
     fn from(other: &ViewDataContextQuery) -> Self {
         Self{
-            database: other.database,
             query: other.query,
         }
     }
 }
 
 pub const VIEW_DATA_QUERIES: &'static [ViewDataContextQuery] =  &[
-    ViewDataContextQuery::new("puppers", "SELECT id, CAST(name AS CHAR) FROM puppers"),
-    ViewDataContextQuery::new("puppers:-80", "SELECT id, CAST(name AS CHAR) FROM puppers"),
-    ViewDataContextQuery::new("puppers:80-", "SELECT id, CAST(name AS CHAR) FROM puppers"),
+    ViewDataContextQuery::new("SELECT id, CAST(name AS CHAR) FROM puppers"),
 ];
 

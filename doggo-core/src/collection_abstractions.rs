@@ -1,4 +1,4 @@
-use crate::dtos::Pupper;
+use crate::dtos::{DataQueryResult, Pupper};
 use crate::ballot::Ballot;
 use crate::user::User;
 
@@ -31,7 +31,7 @@ pub trait UserRepository {
 }
 
 pub trait DataRepository {
-	type Error: 'static + Send;
-	fn get(&mut self, database: impl AsRef<str>, query: impl AsRef<str>) -> Result<Vec<Vec<String>>, Self::Error>;
+    type Error: 'static + Send;
+    fn get(&mut self, query: impl AsRef<str>) -> Result<DataQueryResult, Self::Error>;
 }
 

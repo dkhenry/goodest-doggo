@@ -22,7 +22,7 @@ pub fn query_handler() -> VitessPupperQueriesHandler<PupperRepositoryRetryWrappe
 }
 
 pub fn data_query_handler() -> VitessDataQueryHandler<VitessDataRepository> {
-	let repo = VitessDataRepository::new();
-	VitessDataQueryHandler::new(repo)
+    let repo = VitessDataRepository::new();
+    VitessDataQueryHandler::new(repo)
 }
 
