@@ -47,7 +47,7 @@ impl<T> Handles<LoginCommand> for VitessUserCommandHandler<T>
     fn handle(&mut self, msg: LoginCommand) -> Self::Result {
         let user = self.repo.get(&msg.email)
             .map_err(|e| DbFailure { source: Box::new(e)})?
-            .ok_or( ResourceNotFound { resource: format!("user with email {}", &msg.email) } )?;
+            .ok_or( NotAuthorized )?;
 
 
         if !user.valid_password(&msg.password) {
