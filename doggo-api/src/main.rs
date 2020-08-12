@@ -13,9 +13,10 @@ use rocket::response::{Redirect, Flash};
 use rocket_contrib::templates::Template;
 use domain_patterns::query::HandlesQuery;
 use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, GetTopTenPuppersQuery};
-use doggo_api::{Rating, LoginOrSignup, PuppersContext};
+use doggo_core::queries::data_queries::{ViewDataQuery};
+use doggo_api::{Rating, LoginOrSignup, ViewData, PuppersContext, ViewDataContext, VIEW_DATA_QUERIES};
 use domain_patterns::command::Handles;
-use doggo_api::generate::{pupper_command_handler, query_handler, user_command_handler};
+use doggo_api::generate::{data_query_handler, pupper_command_handler, query_handler, user_command_handler};
 use doggo_api::contexts::{GenericContext, PupperContext};
 use doggo_infra::errors::Error as DbError;
 use doggo_core::errors::Error as CoreError;
@@ -215,11 +216,36 @@ fn top_ten_redirect() -> Redirect {
     Redirect::to(uri!(login))
 }
 
+#[get("/view-data")]
+fn view_data(_user_id: UserId) -> Result<Template, Status> {
+    Ok(Template::render("view-data", ViewDataContext::new()))
+}
+
+#[get("/view-data", rank = 2)]
+fn view_data_redirect() -> Redirect {
+    Redirect::to(uri!(login))
+}
+
+#[post("/view-data", data = "<query>")]
+fn view_data_result(query: Form<ViewData>) -> Result<Template, Status> {
+    if query.0.query_id >= VIEW_DATA_QUERIES.len() {
+        return Err(Status::NotFound);
+    }
+    let sql_query = &VIEW_DATA_QUERIES[query.0.query_id];
+    match data_query_handler().handle(sql_query.into()) {
+        Ok(result) => Ok(Template::render("view-data", ViewDataContext::with_result(query.0.query_id, result))),
+        Err(e) => {
+            eprintln!("{:?}", e);
+            Err(Status::InternalServerError)
+        }
+    }
+}
+
 fn main() {
     dotenv().ok();
 
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![configure,handle_configure,login,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect])
+        .mount("/", routes![configure,handle_configure,login,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect, view_data, view_data_redirect, view_data_result])
         .launch();
 }
