@@ -20,7 +20,7 @@
         <table class="outer"><tbody>
             <tr><td colspan="2">
                 <h2>database puppers</h2>
-                <pre>USE puppers;;</pre>
+                <pre>USE puppers;</pre>
                 <table class="data"><tbody>
                     {% for row in query_result.all_shards %}
                     <tr>
@@ -47,7 +47,7 @@
                 </td>
                 <td>
                     <h2>shard puppers:80-</h2>
-                    <pre>USE puppers:-80;</pre>
+                    <pre>USE puppers:80-;</pre>
                     <table class="data"><tbody>
                     {% for row in query_result.last_shard %}
                     <tr>
