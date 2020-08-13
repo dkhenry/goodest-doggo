@@ -240,11 +240,16 @@ fn view_data_result(query: Form<ViewData>, _user_id: UserId) -> Result<Template,
     Ok(Template::render("view-data", execute_view_data_query(query.0.query_id)?))
 }
 
+#[post("/view-data", rank = 2)]
+fn view_data_result_redirect() -> Redirect {
+	Redirect::to(uri!(login))
+}
+
 fn main() {
     dotenv().ok();
 
     rocket::ignite()
         .attach(Template::fairing())
-        .mount("/", routes![configure,handle_configure,login,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect, view_data, view_data_redirect, view_data_result])
+        .mount("/", routes![configure,handle_configure,login,handle_login,logout,index,puppers_redirect,get_puppers,get_rando_pupper,rate_pupper,top_ten,top_ten_redirect, view_data, view_data_redirect, view_data_result, view_data_result_redirect])
         .launch();
 }
