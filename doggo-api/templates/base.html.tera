@@ -221,12 +221,12 @@
                         Top Ten
                     </a>
                 </li>
+                <li><a href="/view-data" class="nav-link">View Data</a></li>
                 <li>
                     <a href="/logout" class="nav-link">
                         Logout
                     </a>
                 </li>
-                <li><a href="/view-data" class="nav-link">View Data</a></li>
                 {% else %}
                 <li>
                     <a href="/login" class="nav-link">
