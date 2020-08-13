@@ -101,6 +101,7 @@ pub struct ViewDataContext {
     pub query_id: Option<usize>,
     pub query: Option<&'static str>,
     pub query_result: Option<DataQueryResult>,
+    pub logged_in: bool,
     pub has_database: bool,
     pub database_is_working: bool,
 }
@@ -112,6 +113,7 @@ impl ViewDataContext {
             query_id: None,
             query: None,
             query_result: None,
+            logged_in: true,
             has_database: doggo_infra::CLIENT_POOL.is_configured(),
             database_is_working: doggo_infra::CLIENT_POOL.is_working(),
         }
