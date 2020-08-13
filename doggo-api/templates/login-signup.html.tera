@@ -3,7 +3,8 @@
     <div class="row medium-12 large-10 columns">
         <div class="margin-top-3">
             <form class="log-in-form" method="POST" action="/authenticate">
-                <h4 class="text-center">{{ title }}</h4>
+              <h4 class="text-center">{{ title }}</h4>
+                <h5 class="text-center">Multiple users can use this application to rate dogs. If you are using the application for the first time, use the <b>“Sign Up”</b> button below to create a user. Please use a password greater than 8 characters.</h5>
                 <label>Email
                     <input type="email" placeholder="somebody@example.com" name="email">
                 </label>
