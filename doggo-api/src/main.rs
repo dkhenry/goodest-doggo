@@ -233,7 +233,7 @@ fn view_data_redirect() -> Redirect {
 }
 
 #[post("/view-data", data = "<query>")]
-fn view_data_result(query: Form<ViewData>) -> Result<Template, Status> {
+fn view_data_result(query: Form<ViewData>, _user_id: UserId) -> Result<Template, Status> {
     if query.0.query_id >= VIEW_DATA_QUERIES.len() {
         return Err(Status::NotFound);
     }
