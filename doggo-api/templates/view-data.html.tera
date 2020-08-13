@@ -6,7 +6,7 @@
                 <h4 class="text-center">View Data</h4>
                 <select name="query_id">
                     {% for query in queries %}
-                    <option value="{{ loop.index0 }}">{{ query.query }}</option>
+                    <option value="{{ loop.index0 }}"{% if query_id == loop.index0 %} selected="selected"{% endif %}>{{ query.query }}</option>
                     {% endfor %}
                 </select>
                 <input type="submit" class="button expanded" value="Submit query" />
