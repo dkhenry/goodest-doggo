@@ -2,14 +2,13 @@
 {% block body %}
     <div class="medium-12 large-10 columns" style="width: 100%; text-align: center;">
         <div class="margin-top-3" style="display: inline-block; max-width: 100%; width: 60%;">
-            <form method="POST">
+            <form id="query_form" method="POST">
                 <h4 class="text-center">View Data</h4>
-                <select name="query_id">
+                <select name="query_id" onchange="return document.getElementById('query_form').submit()">
                     {% for query in queries %}
                     <option value="{{ loop.index0 }}"{% if query_id == loop.index0 %} selected="selected"{% endif %}>{{ query.query }}</option>
                     {% endfor %}
                 </select>
-                <input type="submit" class="button expanded" value="Submit query" />
             </form>
         </div>
         <br clear="all" />
