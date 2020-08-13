@@ -3,7 +3,8 @@
     <div class="medium-12 large-10 columns" style="width: 100%; text-align: center;">
         <div class="margin-top-3" style="display: inline-block; max-width: 100%; width: 60%;">
             <form id="query_form" method="POST">
-                <h4 class="text-center">View Data</h4>
+              <h5 class="text-center"><br>Vitess allows your app to treat the multi-sharded <b>puppers</b> database as a single monolithic database. But Vitess also allows to send the queries only to a specific shard. We use this feature to show you the standard results followed by results from each shard. This will also allow you to understand how rows in each table are distributed across shards using the Vschema that you specified for each table.</h5>
+	      <h5 class="text-center"><b>Select Query</b></h5>
                 <select name="query_id" onchange="return document.getElementById('query_form').submit()">
                     {% for query in queries %}
                     <option value="{{ loop.index0 }}"{% if query_id == loop.index0 %} selected="selected"{% endif %}>{{ query.query }}</option>
@@ -13,10 +14,13 @@
         </div>
         <br clear="all" />
         {% if query_result %}
+	<br>
+        <pre>{{ query }};</pre>
+	<br>
         <table class="outer"><tbody>
             <tr><td colspan="2">
-                <h2>Combined results from all shards</h2>
-                <pre>USE puppers; {{ query }};</pre>
+                <h2>database puppers</h2>
+                <pre>USE puppers;;</pre>
                 <table class="data"><tbody>
                     {% for row in query_result.all_shards %}
                     <tr>
@@ -29,8 +33,8 @@
             </td></tr>
             <tr>
                 <td>
-                    <h2>Results from -80 shard</h2>
-                    <pre>USE puppers:-80; {{ query }};</pre>
+                    <h2>shard puppers:-80</h2>
+                    <pre>USE puppers:-80;</pre>
                     <table class="data"><tbody>
                     {% for row in query_result.first_shard %}
                     <tr>
@@ -42,8 +46,8 @@
                     </tbody></table>
                 </td>
                 <td>
-                    <h2>Results from 80- shard</h2>
-                    <pre>USE puppers:-80; {{ query }};</pre>
+                    <h2>shard puppers:80-</h2>
+                    <pre>USE puppers:-80;</pre>
                     <table class="data"><tbody>
                     {% for row in query_result.last_shard %}
                     <tr>
