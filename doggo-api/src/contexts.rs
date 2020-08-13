@@ -99,6 +99,7 @@ impl From<Vec<Pupper>> for PuppersContext {
 pub struct ViewDataContext {
     pub queries: &'static [ViewDataContextQuery],
     pub query_id: Option<usize>,
+    pub query: Option<&'static str>,
     pub query_result: Option<DataQueryResult>,
     pub has_database: bool,
     pub database_is_working: bool,
@@ -109,6 +110,7 @@ impl ViewDataContext {
         Self{
             queries: VIEW_DATA_QUERIES,
             query_id: None,
+            query: None,
             query_result: None,
             has_database: doggo_infra::CLIENT_POOL.is_configured(),
             database_is_working: doggo_infra::CLIENT_POOL.is_working(),
@@ -118,6 +120,7 @@ impl ViewDataContext {
     pub fn with_result(id: usize, result: DataQueryResult) -> Self {
         let mut context = Self::new();
         context.query_id = Some(id);
+        context.query = Some(VIEW_DATA_QUERIES[id].query);
         context.query_result = Some(result);
         context
     }
