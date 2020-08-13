@@ -190,6 +190,13 @@
         table.data {
             display: inline-table;
         }
+
+        pre {
+            border: 1px solid #cacaca;
+            margin: 0.2em;
+            background-color: black;
+            color: #cacaca;
+        }
     </style>
 </head>
 
