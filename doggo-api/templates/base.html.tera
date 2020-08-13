@@ -212,8 +212,7 @@
                 <li><a href="/view-data" class="nav-link">View Data</a></li>
                 <li><a href="/logout" class="nav-link">Logout</a></li>
                 {% else %}
-                <li><a href="/login" class="nav-link">Login</a></li>
-                <li><a href="/signup" class="nav-link">Signup</a></li>
+                <li><a href="/login" class="nav-link">Login/Signup</a></li>
                 {% endif %}
                 {% else %}
                 <li><a href="/configure" class="nav-link">Configure Database</a></li>
