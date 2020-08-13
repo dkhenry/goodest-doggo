@@ -153,8 +153,10 @@ fn handle_configure(req: ConfigureRequest, database_url: Form<Configure>) -> Fla
         },
         false => uri!(login)
     };
-    doggo_infra::CLIENT_POOL.set_url(url);
-    Flash::success(Redirect::to(redirect_target), format!("Database URL set to: {}", url))
+    match doggo_infra::CLIENT_POOL.set_url(url) {
+        Ok(_) => Flash::success(Redirect::to(redirect_target), format!("Database URL set to: {}", url)),
+        Err(e) => Flash::error(Redirect::to(uri!(configure)), format!("Unable to set database URL: {}", e))
+    }
 }
 
 #[get("/")]
