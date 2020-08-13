@@ -13,10 +13,10 @@ use rocket::response::{Redirect, Flash};
 use rocket_contrib::templates::Template;
 use domain_patterns::query::HandlesQuery;
 use doggo_core::queries::pupper_queries::{GetRandomPupperQuery, GetPupperQuery, GetTopTenPuppersQuery};
-use doggo_core::queries::data_queries::{ViewDataQuery};
-use doggo_api::{Rating, LoginOrSignup, ViewData, PuppersContext, ViewDataContext, VIEW_DATA_QUERIES};
+use doggo_api::{execute_view_data_query, Rating, LoginOrSignup, ViewData};
+use doggo_api::contexts::{PuppersContext, ViewDataContext, VIEW_DATA_QUERIES};
 use domain_patterns::command::Handles;
-use doggo_api::generate::{data_query_handler, pupper_command_handler, query_handler, user_command_handler};
+use doggo_api::generate::{pupper_command_handler, query_handler, user_command_handler};
 use doggo_api::contexts::{GenericContext, PupperContext};
 use doggo_infra::errors::Error as DbError;
 use doggo_core::errors::Error as CoreError;
@@ -218,7 +218,13 @@ fn top_ten_redirect() -> Redirect {
 
 #[get("/view-data")]
 fn view_data(_user_id: UserId) -> Result<Template, Status> {
-    Ok(Template::render("view-data", ViewDataContext::new()))
+    let context;
+    if VIEW_DATA_QUERIES.len() > 0 {
+        context = execute_view_data_query(0)?;
+    } else {
+        context = ViewDataContext::new()
+    }
+    Ok(Template::render("view-data", context))
 }
 
 #[get("/view-data", rank = 2)]
@@ -231,14 +237,7 @@ fn view_data_result(query: Form<ViewData>) -> Result<Template, Status> {
     if query.0.query_id >= VIEW_DATA_QUERIES.len() {
         return Err(Status::NotFound);
     }
-    let sql_query = &VIEW_DATA_QUERIES[query.0.query_id];
-    match data_query_handler().handle(sql_query.into()) {
-        Ok(result) => Ok(Template::render("view-data", ViewDataContext::with_result(query.0.query_id, result))),
-        Err(e) => {
-            eprintln!("{:?}", e);
-            Err(Status::InternalServerError)
-        }
-    }
+    Ok(Template::render("view-data", execute_view_data_query(query.0.query_id)?))
 }
 
 fn main() {
