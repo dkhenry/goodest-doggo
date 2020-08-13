@@ -244,7 +244,7 @@ fn view_data_result(query: Form<ViewData>, _user_id: UserId) -> Result<Template,
 
 #[post("/view-data", rank = 2)]
 fn view_data_result_redirect() -> Redirect {
-	Redirect::to(uri!(login))
+    Redirect::to(uri!(login))
 }
 
 fn main() {
