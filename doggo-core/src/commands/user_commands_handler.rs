@@ -4,7 +4,7 @@ use crate::collection_abstractions::UserRepository;
 use crate::commands::{CreateUserCommand, LoginCommand};
 use crate::Error;
 use crate::user::User;
-use crate::Error::{DbFailure, ResourceNotFound, NotAuthorized};
+use crate::Error::{DbFailure, NotAuthorized};
 
 pub struct VitessUserCommandHandler<T>
     where T: UserRepository
