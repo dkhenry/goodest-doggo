@@ -7,7 +7,7 @@ ENV ROCKET_DATABASES '{ doggers = { url = "mysql://mysql_user:mysql_password@loc
 RUN apt-get update && apt-get -y install ca-certificates cmake musl-tools libssl-dev && rm -rf /var/lib/apt/lists/*
 
 COPY . .
-RUN rustup target add x86_64-unknown-linux-musl
+RUN rustup target add x86_64-unknown-linux-gnu
 
 # Change default shell to bash - necessary for next command
 SHELL ["/bin/bash", "-c"]
@@ -18,19 +18,17 @@ RUN cat Rocket.toml
 
 # Sets the environment variable for the cargo build command that follows.
 ENV PKG_CONFIG_ALLOW_CROSS=1
-RUN cargo fetch --target x86_64-unknown-linux-musl
-RUN cargo build --target x86_64-unknown-linux-musl --release
+RUN cargo fetch --target x86_64-unknown-linux-gnu
+RUN cargo build --target x86_64-unknown-linux-gnu --release
 
-FROM alpine:3.10
-
-RUN apk --no-cache add ca-certificates 
+FROM centos
 
 # Copy build files over
-COPY --from=builder /target/x86_64-unknown-linux-musl/release/doggo-api /usr/local/bin/doggo-api
+COPY --from=builder /target/x86_64-unknown-linux-gnu/release/doggo-api /usr/local/bin/doggo-api
 COPY --from=builder Rocket.toml /usr/local/lib/doggo/
 COPY --from=builder doggo-api/templates /usr/local/lib/doggo/templates
 
 WORKDIR /usr/local/lib/doggo/
 EXPOSE 8000
 
-CMD ["/usr/local/bin/doggo-api"]
+ENTRYPOINT ["/usr/local/bin/doggo-api"]
