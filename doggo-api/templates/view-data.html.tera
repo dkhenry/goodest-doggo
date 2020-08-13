@@ -1,7 +1,7 @@
 {% extends "base" %}
 {% block body %}
-    <div class="row medium-12 large-10 columns" style="text-align: center;">
-        <div class="margin-top-3">
+    <div class="medium-12 large-10 columns" style="width: 100%; text-align: center;">
+        <div class="margin-top-3" style="display: inline-block; max-width: 100%; width: 60%;">
             <form method="POST">
                 <h4 class="text-center">View Data</h4>
                 <select name="query_id">
@@ -12,6 +12,7 @@
                 <input type="submit" class="button expanded" value="Submit query" />
             </form>
         </div>
+        <br clear="all" />
         {% if query_result %}
         <table class="outer"><tbody>
             <tr><td colspan="2">
