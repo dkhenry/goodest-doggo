@@ -10,7 +10,11 @@ pub mod generate;
 pub mod contexts;
 pub use contexts::*;
 
+use domain_patterns::query::HandlesQuery;
+use rocket::http::Status;
 use doggo_core::commands::{RatePupperCommand, CreateUserCommand, LoginCommand};
+use crate::{ViewDataContext, VIEW_DATA_QUERIES};
+use crate::generate::data_query_handler;
 
 #[derive(FromForm)]
 pub struct Rating {
@@ -56,5 +60,16 @@ impl From<LoginOrSignup> for LoginCommand {
 #[derive(FromForm)]
 pub struct ViewData {
     pub query_id: usize,
+}
+
+pub fn execute_view_data_query(id: usize) -> Result<ViewDataContext, Status> {
+    let query = &VIEW_DATA_QUERIES[id];
+    match data_query_handler().handle(query.into()) {
+        Ok(result) => Ok(ViewDataContext::with_result(id, result)),
+        Err(e) => {
+            eprintln!("{:?}", e);
+            Err(Status::InternalServerError)
+        }
+    }
 }
 
