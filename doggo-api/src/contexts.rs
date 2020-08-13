@@ -149,10 +149,10 @@ impl From<&ViewDataContextQuery> for ViewDataQuery {
 
 pub const VIEW_DATA_QUERIES: &'static [ViewDataContextQuery] =  &[
     ViewDataContextQuery::new("SELECT id, CAST(name AS CHAR) FROM puppers"),
-    ViewDataContextQuery::new("SELECT id, rating FROM ratings"),
-    ViewDataContextQuery::new("SELECT COUNT(*) FROM ratings"),
-    ViewDataContextQuery::new("SELECT COUNT(*) FROM ratings WHERE pupper_id IN ('11', '13')"),
-    ViewDataContextQuery::new("SELECT COUNT(*) FROM users"),
     ViewDataContextQuery::new("SELECT CAST(p.name AS CHAR), r.rating FROM puppers p, ratings r WHERE p.id = r.pupper_id"),
+    ViewDataContextQuery::new("SELECT COUNT(*) FROM puppers"),    
+    ViewDataContextQuery::new("SELECT COUNT(*) FROM ratings"),
+    ViewDataContextQuery::new("SELECT COUNT(*) FROM users"),
+
 ];
 
