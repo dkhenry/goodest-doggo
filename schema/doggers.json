@@ -1,10 +1,10 @@
 {
   "sharded": true,
   "vindexes": {
-    "hash": {
+    "hash_vdx": {
 		"type": "hash"
 	},
-    "binary_md5": {
+    "binary_md5_vdx": {
 		"type": "binary_md5"
 	}
   },
@@ -13,7 +13,7 @@
 			"column_vindexes": [
 				{
 					"column": "id",
-					"name": "hash"
+					"name": "hash_vdx"
 				}
 			],
 			"auto_increment": {
@@ -25,7 +25,7 @@
 			"column_vindexes": [
 				{
 					"column": "pupper_id",
-					"name": "hash"
+					"name": "hash_vdx"
 				}
 			],
 			"auto_increment": {
@@ -37,7 +37,7 @@
 		  "column_vindexes": [
 			  {
 				  "column": "id",
-				  "name": "binary_md5"
+				  "name": "binary_md5_vdx"
 			  }
 		  ]
 	  }
