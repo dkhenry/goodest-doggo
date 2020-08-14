@@ -25,7 +25,7 @@ FROM centos
 
 # Copy build files over
 COPY --from=builder /target/x86_64-unknown-linux-gnu/release/doggo-api /usr/local/bin/doggo-api
-COPY --from=builder Rocket.toml /usr/local/lib/doggo/
+COPY --from=builder Rocket.toml.docker /usr/local/lib/doggo/
 COPY --from=builder doggo-api/templates /usr/local/lib/doggo/templates
 
 WORKDIR /usr/local/lib/doggo/
