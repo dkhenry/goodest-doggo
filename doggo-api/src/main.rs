@@ -54,8 +54,11 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserId {
 }
 
 #[get("/configure")]
-fn configure() -> Template {
-    let context = GenericContext::with_title("Configure Database");
+fn configure(flash: Option<FlashMessage>) -> Template {
+    let mut context = GenericContext::with_title("Configure Database");
+    if let Some(ref msg) = flash {
+        context.insert("flash", msg.msg());
+    }
     Template::render("configure-database", context)
 }
 
@@ -155,6 +158,7 @@ fn handle_configure(req: ConfigureRequest, database_url: Form<Configure>) -> Fla
     };
     match doggo_infra::CLIENT_POOL.set_url(url) {
         Ok(_) => Flash::success(Redirect::to(redirect_target), format!("Database URL set to: {}", url)),
+        // TODO:  Nicer error messages than "UrlError { URL ParseError { relative URL without a base } }"
         Err(e) => Flash::error(Redirect::to(uri!(configure)), format!("Unable to set database URL: {}", e))
     }
 }
