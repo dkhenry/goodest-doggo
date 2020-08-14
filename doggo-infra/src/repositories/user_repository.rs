@@ -2,7 +2,6 @@ use super::CLIENT_POOL;
 use super::Pool;
 use doggo_core::user::User;
 use doggo_core::collection_abstractions::UserRepository;
-use domain_patterns::models::Entity;
 
 pub struct VitessUserRepository {
     pool: Pool,
@@ -44,7 +43,7 @@ impl UserRepository for VitessUserRepository {
             format!(r"INSERT INTO users (id, email, password)
             VALUES ('{}', '{}', '{}')", user.id(), &user.email(), &user.password())
         ) {
-            Ok(_) => Ok(Some(user.id())),
+            Ok(_) => Ok(Some(user.id().to_string())),
             Err(e) => Err(e),
         }
     }
