@@ -5,13 +5,13 @@ use std::convert::TryFrom;
 /// User represents a user in our system.  The password value object always stores an encrypted string.
 #[derive(Entity, Clone)]
 pub struct User {
-    id: u64,
+    id: i64,
     email: Email,
     password: Password,
 }
 
 impl User {
-    pub fn id(&self) -> u64 {
+    pub fn id(&self) -> i64 {
         self.id
     }
 
@@ -24,7 +24,7 @@ impl User {
     }
 
     /// This method allows you to construct a user bypassing validation from raw values.
-    pub fn new_raw(id: u64, email: String, password: String) -> User {
+    pub fn new_raw(id: i64, email: String, password: String) -> User {
         User {
             id: id,
             email: Email { value: email },
