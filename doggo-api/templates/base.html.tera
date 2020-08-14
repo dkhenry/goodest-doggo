@@ -228,7 +228,13 @@
                 <label>Database Url
                     <input type="text" placeholder="mysql://user:password@host:3306/puppers" name="database_url">
                 </label>
-                <span class="alert label flash">Database is not connected; please ensure your database is running and update the credentials</span>
+                <span class="alert label flash">
+                    {% if flash %}
+                    {{ flash }}
+                    {% else %}
+                    Database is not connected; please ensure your database is running and update the credentials
+                    {% endif %}
+                </span>
                 <p><input type="submit" class="button expanded" value="Configure Database" /></p>
             </form>
         </div>
