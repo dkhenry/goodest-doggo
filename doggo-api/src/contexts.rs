@@ -150,6 +150,7 @@ impl From<&ViewDataContextQuery> for ViewDataQuery {
 pub const VIEW_DATA_QUERIES: &'static [ViewDataContextQuery] =  &[
     ViewDataContextQuery::new("SELECT id, name FROM puppers"),
     ViewDataContextQuery::new("SELECT p.name, r.rating FROM puppers p, ratings r WHERE p.id = r.pupper_id"),
+    ViewDataContextQuery::new("SELECT p.name, COALESCE(SUM(r.rating)/COUNT(r.rating), 0.0) AS pupper_rating FROM puppers as p LEFT JOIN ratings as r ON r.pupper_id = p.id GROUP BY p.id"),
     ViewDataContextQuery::new("SELECT COUNT(*) FROM puppers"),    
     ViewDataContextQuery::new("SELECT COUNT(*) FROM ratings"),
     ViewDataContextQuery::new("SELECT COUNT(*) FROM users"),

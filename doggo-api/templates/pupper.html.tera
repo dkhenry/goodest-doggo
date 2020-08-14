@@ -3,7 +3,7 @@
     {% if database_is_working %}
     <div class="row medium-8 large-7 columns">
         <div class="blog-post">
-            <h1 id="pupper">Pupper Name: <b>{{ name }}</b></h1>
+            <h1 id="pupper"><b>{{ name }}</b></h1>
             <img class="thumbnail" src="{{ image }}">
             <h1 id="rating">Current Rating: <b>{{ rating }}</b></h1>
             <div class="card rating margin-bottom-3" align="center">
