@@ -8,6 +8,7 @@ pub struct GenericContext {
     pub title: String,
     pub logged_in: bool,
     pub has_database: bool,
+    pub database_is_working: bool,
 }
 
 impl GenericContext {
@@ -17,6 +18,7 @@ impl GenericContext {
             title: title.to_string(),
             logged_in: false,
             has_database: doggo_infra::CLIENT_POOL.is_configured(),
+            database_is_working: doggo_infra::CLIENT_POOL.is_working(),
         }
     }
 
@@ -30,10 +32,11 @@ impl GenericContext {
 
 impl Serialize for GenericContext {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let mut state = serializer.serialize_map(Some(3 + self.extra.len()))?;
+        let mut state = serializer.serialize_map(Some(4 + self.extra.len()))?;
         state.serialize_entry("title", &self.title)?;
         state.serialize_entry("logged_in", &self.logged_in)?;
         state.serialize_entry("has_database", &self.has_database)?;
+        state.serialize_entry("database_is_working", &self.database_is_working)?;
         for (key, value) in self.extra.iter() {
             state.serialize_entry(key, value)?;
         }

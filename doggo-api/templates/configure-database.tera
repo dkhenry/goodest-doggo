@@ -1,5 +1,6 @@
 {% extends "base" %}
 {% block body %}
+    {% if database_is_working %}
     <div class="row medium-12 large-10 columns">
         <div class="margin-top-3">
             <form class="log-in-form" method="POST">
@@ -14,6 +15,7 @@
             </form>
         </div>
     </div>
+    {% endif %}
 {% endblock body %}
 
 

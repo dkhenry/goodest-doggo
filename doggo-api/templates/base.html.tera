@@ -209,6 +209,20 @@
             </ul>
         </div>
     </div>
+    {% if not database_is_working %}
+    <div class="row medium-12 large-10 columns">
+        <div class="margin-top-3">
+            <form class="log-in-form" method="POST" action="/configure">
+                <h4 class="text-center">Configure Database</h4>
+                <label>Database Url
+                    <input type="text" placeholder="mysql://user:password@host:3306/puppers" name="database_url">
+                </label>
+                <span class="alert label flash">Database is not connected; please ensure your database is running and update the credentials</span>
+                <p><input type="submit" class="button expanded" value="Configure Database" /></p>
+            </form>
+        </div>
+    </div>
+    {% endif %}
     {% block body %}{% endblock %}
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>

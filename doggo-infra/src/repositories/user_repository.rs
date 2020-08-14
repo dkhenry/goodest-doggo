@@ -24,32 +24,23 @@ impl UserRepository for VitessUserRepository {
 
     fn get(&mut self, email: &String) -> Result<Option<User>, Self::Error> {
         let user: Option<User> =
-            match self.pool.get_conn().unwrap().query(
+            match self.pool.query_first(
                 format!(r"SELECT u.id, u.email, u.password
                 FROM users AS u
                 WHERE u.email = '{}'", email)
-            ) {
-                Ok(mut qr) => {
-                    if let Some(row_result) = qr.next() {
-                        let row = row_result?;
-                        let (id, email, password) = mysql::from_row::<(String, String, String)>(row);
-                        Some(User::new_raw(id, email, password))
-                    } else {
-                        None
-                    }
+            )? {
+                Some(row) => {
+                    let (id, email, password) = row;
+                    Some(User::new_raw(id, email, password))
                 },
-
-                // Underlying MySQL error type unrelated to existence of user in db.
-                Err(e) => {
-                    return Err(e);
-                }
+                None => None
             };
 
         Ok(user)
     }
 
     fn insert(&mut self, user: &User) -> Result<Option<String>, Self::Error> {
-        match self.pool.get_conn().unwrap().query(
+        match self.pool.query_drop(
             format!(r"INSERT INTO users (id, email, password)
             VALUES ('{}', '{}', '{}')", user.id(), &user.email(), &user.password())
         ) {

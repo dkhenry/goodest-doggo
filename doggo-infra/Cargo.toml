@@ -9,7 +9,7 @@ repository = "https://github.com/planetscale/goodest-doggo"
 edition = "2018"
 
 [dependencies]
-mysql = "16.1.0"
+mysql = "18.2"
 domain_patterns = "0.2.141"
 doggo-core = { path = "../doggo-core" }
 lazy_static = "1.4.0"
