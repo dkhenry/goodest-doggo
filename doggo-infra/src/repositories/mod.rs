@@ -58,6 +58,7 @@ impl Pool {
     pub fn query<T: FromRow>(&self, query: impl AsRef<str>) -> mysql::Result<Vec<T>> {
         let mut connection = self.get_conn()?;
         let result = connection.query(query.as_ref());
+        // TODO:  Consider specific errors to be a non-working database connection, rather than all of them
         self.0.lock().unwrap().is_working = result.is_ok();
         result
     }
@@ -65,6 +66,7 @@ impl Pool {
     pub fn query_first<T: FromRow>(&self, query: impl AsRef<str>) -> mysql::Result<Option<T>> {
         let mut connection = self.get_conn()?;
         let result = connection.query_first(query.as_ref());
+        // TODO:  Consider specific errors to be a non-working database connection, rather than all of them
         self.0.lock().unwrap().is_working = result.is_ok();
         result
     }
@@ -72,6 +74,7 @@ impl Pool {
     pub fn query_drop(&self, query: impl AsRef<str>) -> mysql::Result<()> {
         let mut connection = self.get_conn()?;
         let result = connection.query_drop(query.as_ref());
+        // TODO:  Consider specific errors to be a non-working database connection, rather than all of them
         self.0.lock().unwrap().is_working = result.is_ok();
         result
     }
