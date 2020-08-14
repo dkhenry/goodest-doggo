@@ -2,4 +2,4 @@
 template_dir = "doggo-api/templates/"
 
 [production]
-template_dir = "/usr/local/lib/doggo/templates/"
+template_dir = "templates/"
