@@ -4,6 +4,7 @@
 extern crate rocket;
 
 // Uncomment for local development
+use std::env;
 use dotenv::dotenv;
 use rocket::http::Status;
 use rocket::http::ext::IntoOwned;
@@ -253,6 +254,15 @@ fn view_data_result_redirect() -> Redirect {
 
 fn main() {
     dotenv().ok();
+
+    if !cfg!(debug_assertions) {
+        let dir = {
+            let mut path = env::current_exe().unwrap();
+            path.pop();
+            path
+        };
+        env::set_current_dir(dir).unwrap();
+    }
 
     rocket::ignite()
         .attach(Template::fairing())
