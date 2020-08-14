@@ -1,39 +1,32 @@
 use crate::Result;
 use crate::value_objects::{Password, Email};
 use std::convert::TryFrom;
-use ulid::Ulid;
 
 /// User represents a user in our system.  The password value object always stores an encrypted string.
 #[derive(Entity, Clone)]
 pub struct User {
-    id: Ulid,
+    id: u64,
     email: Email,
     password: Password,
 }
 
 impl User {
+    pub fn id(&self) -> u64 {
+        self.id
+    }
+
     pub fn new(email: String, password: String) -> Result<User> {
         Ok(User {
-            id: Ulid::new(),
+            id: rand::random(),
             email: Email::try_from(email)?,
             password: Password::try_from(password)?,
         })
     }
 
-    /// Returns the underlying u128 inside the ulid for storing as a binary type.
-    pub fn bin_id(&self) -> u128 {
-        self.id.0
-    }
-
-    /// Returns the underlying id as an owned Ulid.
-    pub fn raw_id(&self) -> Ulid {
-        self.id.clone()
-    }
-
     /// This method allows you to construct a user bypassing validation from raw values.
-    pub fn new_raw(id: String, email: String, password: String) -> User {
+    pub fn new_raw(id: u64, email: String, password: String) -> User {
         User {
-            id: Ulid::from_string(&id).unwrap(),
+            id: id,
             email: Email { value: email },
             password: Password { value: password },
         }
