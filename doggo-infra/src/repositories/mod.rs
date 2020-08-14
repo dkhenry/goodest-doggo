@@ -44,6 +44,10 @@ impl Pool {
     }
 
     pub fn set_url(&self, url: impl AsRef<str>) -> Result<(), mysql::Error> {
+        match mysql::Opts::from_url(url.as_ref()) {
+            Ok(_) => (),
+            Err(e) => return Err(e.into())
+        };
         let guard = &mut self.0.lock().unwrap();
         let result = mysql::Pool::new(&url);
         guard.is_working = result.is_ok();
