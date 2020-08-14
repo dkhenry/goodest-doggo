@@ -27,7 +27,13 @@ impl Pool {
 
     pub fn get_conn(&self) -> Result<mysql::PooledConn, mysql::Error> {
         let guard = &mut self.0.lock().unwrap();
-        let inner = guard.inner.as_ref().unwrap();
+        let inner = match guard.inner.as_ref() {
+            Some(v) => v,
+            None => {
+                eprintln!("!!! Pool::get_conn():  Got None from guard.inner.as_ref()");
+                return Err(std::io::Error::from(std::io::ErrorKind::NotFound).into());
+            }
+        };
         match inner.get_conn() {
             Ok(v) => Ok(v),
             Err(e) => {
