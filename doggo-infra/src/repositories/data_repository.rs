@@ -59,10 +59,17 @@ impl DataRepository for VitessDataRepository {
     type Error = mysql::Error;
 
     fn get(&mut self, query: impl AsRef<str>) -> Result<DataQueryResult, Self::Error> {
+        let shards = self.get_shards("puppers")?;
         Ok(DataQueryResult{
             all_shards: self.query_for_database("puppers", &query)?,
-            first_shard: self.query_for_database("puppers:-80", &query)?,
-            last_shard: self.query_for_database("puppers:80-", &query)?
+            individual_shards: shards.iter()
+                .map(|shard| {
+                    let shard = format!("puppers:{}", &shard);
+                    let result = self.query_for_database(&shard, &query).unwrap(); // TODO:  Surface error
+                    (shard, result)
+                })
+                .collect(),
+            shard_count: shards.len() as u8
         })
     }
 }
