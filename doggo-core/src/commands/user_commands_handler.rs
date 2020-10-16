@@ -30,7 +30,7 @@ impl<T> Handles<CreateUserCommand> for VitessUserCommandHandler<T>
         let new_user = User::new(msg.email, msg.password)?;
 
         let u_id = self.repo.insert(&new_user)
-            .map_err(|e| DbFailure { source: Box::new(e) })?;
+            .map_err(|e| {eprintln!("{}", e); DbFailure { source: Box::new(e) }})?;
 
         // Safe to unwrap.  If we had a duplicate key error, that's a database error and would
         // be returned above in the map err
