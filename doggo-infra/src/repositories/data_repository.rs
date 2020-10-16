@@ -1,5 +1,6 @@
 use super::CLIENT_POOL;
 use super::Pool;
+use mysql::prelude::FromRow;
 use mysql::prelude::Queryable;
 use doggo_core::collection_abstractions::DataRepository;
 use doggo_core::dtos::DataQueryResult;
@@ -16,6 +17,20 @@ impl VitessDataRepository {
             // in this handler.
             pool: CLIENT_POOL.clone(),
         }
+    }
+
+    fn get_shards(&self, database: impl AsRef<str>) -> Result<Vec<String>, mysql::Error> {
+        let mut conn = self.pool.get_conn().unwrap();
+        let conn = conn.as_mut();
+        let rows = conn.query_iter("SHOW VITESS_SHARDS")?.map(|rs| rs.into_iter()).flatten().filter_map(|row| {
+            let parts = <(String,)>::from_row(row).0;
+            let parts: Vec<_> = parts.split("/").collect();
+            if parts.len() != 2 || parts[0] != database.as_ref() {
+                return None;
+            }
+            Some(parts[1].to_string())
+        }).collect();
+        Ok(rows)
     }
 
     fn query_for_database(&mut self, database: impl AsRef<str>, query: impl AsRef<str>) -> Result<Vec<Vec<String>>, mysql::Error> {
