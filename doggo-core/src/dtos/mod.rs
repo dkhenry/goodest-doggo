@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Serialize, Deserialize)]
 pub struct Pupper {
     pub id: u64,
@@ -9,7 +11,7 @@ pub struct Pupper {
 #[derive(Serialize)]
 pub struct DataQueryResult {
     pub all_shards: Vec<Vec<String>>,
-    pub first_shard: Vec<Vec<String>>,
-    pub last_shard: Vec<Vec<String>>,
+    pub individual_shards: HashMap<String, Vec<Vec<String>>>,
+    pub shard_count: u8,
 }
 
