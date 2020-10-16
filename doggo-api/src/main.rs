@@ -99,6 +99,7 @@ fn handle_login(
             Ok(Redirect::to(uri!(index)))
         },
         Err(e) => {
+            println!("{:?}", e);
             if let CoreError::NotAuthorized = e {
                 Err(Flash::error(
                     Redirect::to(uri!(login)),
@@ -191,7 +192,10 @@ fn get_rando_pupper(_user_id: UserId) -> Result<Template, Status> {
     match query_handler().handle(GetRandomPupperQuery) {
         Ok(Some(pupper)) => Ok(Template::render("pupper", PupperContext::from(pupper))),
         Ok(None) => Err(Status::NotFound),
-        Err(_) => Ok(Template::render("pupper", GenericContext::with_title("Rando Pupper")))
+        Err(e) => {
+            eprintln!("{}", e);
+            Ok(Template::render("pupper", GenericContext::with_title("Rando Pupper")))
+        }
     }
 }
 
